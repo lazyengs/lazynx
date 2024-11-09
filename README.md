@@ -2,5 +2,4 @@
 
 # LazyNX
 
-Official files for LazyNx, a command line utility for managing Nx projects.
-
+Official files for lazynx, a simple terminal UI for [Nx](https://nx.dev) commands inspired by [lazygit](https://github.com/jesseduffield/lazygit) & [lazydocker](https://github.com/jesseduffield/lazydocker).
