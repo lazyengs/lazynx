@@ -2,8 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/gantoreno/lazynx/pkg/program"
 )
 
 func main() {
-	fmt.Println("Hello, lazynx!")
+	p := program.Create()
+
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error starting program: %v", err)
+		os.Exit(1)
+	}
 }
