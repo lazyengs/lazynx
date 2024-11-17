@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-func TestNxlsLspClient(t *testing.T) {
-	result := NxlsLspClient("works")
+func TestLspClient(t *testing.T) {
+	result := LspClient("works")
 	if result != "NxlsLspClient works" {
 		t.Error("Expected NxlsLspClient to append 'works'")
 	}
