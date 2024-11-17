@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gantoreno/lazynx/pkg/program"
+	"github.com/gantoreno/lazynx/internal/program"
 )
 
 func main() {
