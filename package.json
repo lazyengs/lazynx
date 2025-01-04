@@ -1,0 +1,14 @@
+{
+  "name": "@console/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {
+    "@nx-go/nx-go": "3.2.0"
+  },
+  "devDependencies": {
+    "@nx/workspace": "20.0.12",
+    "nx": "20.0.12"
+  }
+}

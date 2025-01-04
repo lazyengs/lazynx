@@ -4,20 +4,22 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/gantoreno/lazynx/pkg/components"
-	"github.com/gantoreno/lazynx/pkg/models/a"
-	"github.com/gantoreno/lazynx/pkg/models/b"
-	"github.com/gantoreno/lazynx/pkg/models/c"
-	"github.com/gantoreno/lazynx/pkg/utils"
+	"github.com/gantoreno/lazynx/internal/components"
+	"github.com/gantoreno/lazynx/internal/models/a"
+	"github.com/gantoreno/lazynx/internal/models/b"
+	"github.com/gantoreno/lazynx/internal/models/c"
+	"github.com/gantoreno/lazynx/internal/utils"
 )
 
-type ModelId int
-type ModelMap map[ModelId]tea.Model
+type (
+	ModelId  int
+	ModelMap map[ModelId]tea.Model
+)
 
 type ProgramModel struct {
-	focusedModelId ModelId
 	models         ModelMap
 	viewport       tea.WindowSizeMsg
+	focusedModelId ModelId
 }
 
 const (
@@ -112,7 +114,6 @@ func (m ProgramModel) View() string {
 		),
 		bottomText,
 	)
-
 }
 
 func (m ProgramModel) getModel(id ModelId) tea.Model {

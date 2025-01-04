@@ -1,6 +1,6 @@
 module github.com/gantoreno/lazynx
 
-go 1.23.0
+go 1.23
 
 require (
 	github.com/charmbracelet/bubbletea v1.2.1

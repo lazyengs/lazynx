@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": ["default"],
+    "sharedGlobals": [
+      "{workspaceRoot}/go.work",
+      "{workspaceRoot}/.github/workflows/ci.yml"
+    ]
+  },
+  "plugins": ["@nx-go/nx-go"]
+}
