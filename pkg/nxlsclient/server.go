@@ -1,0 +1,153 @@
+package nxlsclient
+
+import (
+	"bufio"
+	"context"
+	"embed"
+	"errors"
+	"io"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+
+	"github.com/sourcegraph/jsonrpc2"
+)
+
+//go:embed server/nxls
+var serverfs embed.FS
+
+// unpackServer unpacks the embedded nxls server to a temporary directory.
+func (c *Client) unpackServer() error {
+	tempDir, err := os.MkdirTemp("", "nxls-server")
+	if err != nil {
+		c.Logger.Errorf("Failed to create temp directory: %s", err.Error())
+		return errors.New("Failed to create the temp directory")
+	}
+	c.serverDir = tempDir
+	c.Logger.Infow("Created temporary directory", "tempDir", tempDir)
+
+	err = os.CopyFS(tempDir, serverfs)
+	if err != nil {
+		c.Logger.Errorf("Failed to copy the server to the temp directory: %s", err.Error())
+		return errors.New("Failed to copy the server to the temp directory")
+
+	}
+	c.serverDir = path.Join(tempDir, "server", "nxls")
+
+	return nil
+}
+
+// runSystemReport runs a system report by executing node commands in the server folder.
+func (c *Client) runSystemReport(ctx context.Context) error {
+	c.Logger.Infow("System Report:", "serverDir", c.serverDir)
+	err := c.runOSCommandInServerFolder(ctx, "node", "-v")
+	if err != nil {
+		return err
+	}
+	return c.runOSCommandInServerFolder(ctx, "node", "-p", "process.arch")
+}
+
+// installDependencies installs npm dependencies in the server folder.
+func (c *Client) installDependencies(ctx context.Context) error {
+	c.Logger.Infow("Installing dependencies at ", "serverDir", c.serverDir)
+	return c.runOSCommandInServerFolder(ctx, "npm", "install")
+}
+
+// runOSCommandInServerFolder runs an OS command in the server folder and logs the output.
+func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, args ...string) error {
+	c.Logger.Infow("Running command", "serverDir", c.serverDir, "command", name, "args", args)
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Dir = c.serverDir
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		c.Logger.Fatalf("Failed to get stdout pipe: %s", err.Error())
+		return errors.New("Failed to get stdout pipe")
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		c.Logger.Errorf("Failed to get stderr pipe: %s", err.Error())
+		return errors.New("Failed to get stderr pipe")
+	}
+
+	if err := cmd.Start(); err != nil {
+		c.Logger.Errorf("Failed to start command: %s", err.Error())
+		return errors.New("Failed to start command")
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
+		for scanner.Scan() {
+			c.Logger.Infow(scanner.Text())
+		}
+	}()
+
+	if err := cmd.Wait(); err != nil {
+		c.Logger.Errorf("Failed to run the command %s: %s", name, err.Error())
+		return errors.New("Failed to run the command")
+	}
+
+	return nil
+}
+
+// startNxls starts the nxls server and creates the jsonrpc2 connection.
+func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error) {
+	serverPath := filepath.Join(c.serverDir, "main.js")
+
+	c.Logger.Infow("Starting nxls", "workspace", c.nxWorkspacePath, "serverPath", serverPath)
+
+	cmd := exec.CommandContext(ctx, "node", serverPath, "--stdio")
+	cmd.Dir = c.nxWorkspacePath
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		c.Logger.Fatalf("failed to create stdin pipe: %s", err.Error())
+		return nil, errors.New("Failed to get stdin pipe")
+	}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		c.Logger.Fatalf("Failed to get stdout pipe: %s", err.Error())
+		return nil, errors.New("Failed to get stdout pipe")
+	}
+
+	if err := cmd.Start(); err != nil {
+		c.Logger.Errorf("Failed to start command: %s", err.Error())
+		return nil, errors.New("Failed to start command")
+	}
+
+	rwc = &ReadWriteCloser{
+		stdin:  stdin,
+		stdout: stdout,
+	}
+
+	// Start a goroutine to handle the command's completion
+	go func() {
+		if err := cmd.Wait(); err != nil {
+			c.Logger.Errorw("Command exited with error", "error", err)
+		}
+	}()
+
+	return rwc, nil
+}
+
+// connectToLSPServer connects to the LSP server using the provided ReadWriteCloser.
+func (c *Client) connectToLSPServer(ctx context.Context, rwc *ReadWriteCloser) {
+	stream := jsonrpc2.NewBufferedStream(rwc, jsonrpc2.VSCodeObjectCodec{})
+	c.conn = jsonrpc2.NewConn(ctx, stream, jsonrpc2.HandlerWithError(c.handleServerRequest))
+	c.Logger.Infow("Connected to nxls server")
+}
+
+// handleServerRequest handles incoming requests from the server.
+func (c *Client) handleServerRequest(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
+	c.Logger.Infow("Received message", "method", req.Method, "params", req.Params)
+	// Handle incoming requests from the server
+	// You can implement your logic here
+	return nil, nil
+}
+
+// cleanUpServer removes the temporary server directory.
+func (c *Client) cleanUpServer() {
+	os.RemoveAll(c.serverDir)
+}

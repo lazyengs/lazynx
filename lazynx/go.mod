@@ -1,4 +1,4 @@
-module github.com/gantoreno/lazynx
+module github.com/lazyengs/lazynx
 
 go 1.23
 

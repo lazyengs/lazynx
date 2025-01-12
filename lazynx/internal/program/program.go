@@ -4,11 +4,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/gantoreno/lazynx/internal/components"
-	"github.com/gantoreno/lazynx/internal/models/a"
-	"github.com/gantoreno/lazynx/internal/models/b"
-	"github.com/gantoreno/lazynx/internal/models/c"
-	"github.com/gantoreno/lazynx/internal/utils"
+	"github.com/lazyengs/lazynx/internal/components"
+	"github.com/lazyengs/lazynx/internal/models/a"
+	"github.com/lazyengs/lazynx/internal/models/b"
+	"github.com/lazyengs/lazynx/internal/models/c"
+	"github.com/lazyengs/lazynx/internal/utils"
 )
 
 type (

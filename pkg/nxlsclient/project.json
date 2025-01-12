@@ -1,10 +1,9 @@
 {
-  "name": "nxls-lsp-client",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "nxlsclient",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
-  "sourceRoot": "nxls-lsp-client",
+  "sourceRoot": "pkg/nxlsclient",
   "tags": [
-    "application:shared",
     "technology:go",
     "type:library"
   ],
