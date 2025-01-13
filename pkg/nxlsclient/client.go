@@ -13,6 +13,7 @@ type Client struct {
 	conn            *jsonrpc2.Conn
 	serverDir       string
 	nxWorkspacePath string
+	isVerbose       bool
 }
 
 // NewClient creates a new Client struct instance with the given nxWorkspacePath and verbosity level.
@@ -28,6 +29,7 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 	return &Client{
 		Logger:          sugar,
 		nxWorkspacePath: nxWorkspacePath,
+		isVerbose:       verbose,
 	}
 }
 

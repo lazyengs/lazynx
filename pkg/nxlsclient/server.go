@@ -10,8 +10,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-
-	"github.com/sourcegraph/jsonrpc2"
 )
 
 //go:embed server/nxls
@@ -130,21 +128,6 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 	}()
 
 	return rwc, nil
-}
-
-// connectToLSPServer connects to the LSP server using the provided ReadWriteCloser.
-func (c *Client) connectToLSPServer(ctx context.Context, rwc *ReadWriteCloser) {
-	stream := jsonrpc2.NewBufferedStream(rwc, jsonrpc2.VSCodeObjectCodec{})
-	c.conn = jsonrpc2.NewConn(ctx, stream, jsonrpc2.HandlerWithError(c.handleServerRequest))
-	c.Logger.Infow("Connected to nxls server")
-}
-
-// handleServerRequest handles incoming requests from the server.
-func (c *Client) handleServerRequest(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
-	c.Logger.Infow("Received message", "method", req.Method, "params", req.Params)
-	// Handle incoming requests from the server
-	// You can implement your logic here
-	return nil, nil
 }
 
 // cleanUpServer removes the temporary server directory.
