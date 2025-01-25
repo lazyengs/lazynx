@@ -132,5 +132,8 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 
 // cleanUpServer removes the temporary server directory.
 func (c *Client) cleanUpServer() {
-	os.RemoveAll(c.serverDir)
+	err := os.RemoveAll(c.serverDir)
+	if err != nil {
+		c.Logger.Errorf("Failed to remove the server directory: %s", err.Error())
+	}
 }

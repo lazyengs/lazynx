@@ -32,11 +32,11 @@ func (c *Client) handleServerRequest(ctx context.Context, conn *jsonrpc2.Conn, r
 			c.Logger.Info(params.Message)
 		}
 
-		if c.isVerbose {
-			c.Logger.Info(req)
-		}
-
 		return nil, nil
+	}
+
+	if c.isVerbose {
+		c.Logger.Info(req)
 	}
 
 	// Handle incoming requests from the server
