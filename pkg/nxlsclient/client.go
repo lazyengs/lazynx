@@ -2,7 +2,7 @@ package nxlsclient
 
 import (
 	"context"
-	"time"
+	"os/exec"
 
 	"github.com/sourcegraph/jsonrpc2"
 	"go.uber.org/zap"
@@ -11,6 +11,7 @@ import (
 type Client struct {
 	Logger          *zap.SugaredLogger
 	conn            *jsonrpc2.Conn
+	cmd             *exec.Cmd
 	serverDir       string
 	nxWorkspacePath string
 	isVerbose       bool
@@ -34,46 +35,48 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 }
 
 // Start spawns the nxls server process, sends the initialize command to the LSP server and listen for incoming messages.
-func (c *Client) Start(ctx context.Context) error {
+func (c *Client) Start(ctx context.Context, ch chan *InitializeCommandResult) error {
 	c.Logger.Infow("Starting client")
 
 	err := c.unpackServer()
 	if err != nil {
-		c.stop()
+		c.Stop()
 		return err
 	}
 	err = c.installDependencies(ctx)
 	if err != nil {
-		c.stop()
+		c.Stop()
 		return err
 	}
 
 	rwc, err := c.startNxls(ctx)
 	if err != nil {
-		c.stop()
+		c.Stop()
 		return err
 	}
 
 	c.connectToLSPServer(ctx, rwc)
 
-	err = c.sendInitializeCommand(ctx)
+	initResponse, err := c.sendInitializeCommand(ctx)
+	ch <- initResponse
+	close(ch)
 	if err != nil {
-		c.stop()
+		c.Stop()
 		return err
+
 	}
 
 	<-ctx.Done()
-	c.stop()
 
 	return nil
 }
 
-// stop gracefully stops the client, cleaning up resources and closing connections.
-func (c *Client) stop() {
+// Stop gracefully Stops the client, cleaning up resources and closing connections.
+func (c *Client) Stop() {
 	c.Logger.Infow("Stopping client")
+	if c.conn != nil {
+		c.conn.Close()
+	}
+	c.Logger.Infow("Clean up completed")
 	c.Logger.Sync()
-	c.cleanUpServer()
-	c.conn.Close()
-	// grace time to allow the completion of the clean up
-	time.Sleep(1 * time.Second)
 }

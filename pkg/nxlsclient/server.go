@@ -119,6 +119,7 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 		stdin:  stdin,
 		stdout: stdout,
 	}
+	c.cmd = cmd
 
 	// Start a goroutine to handle the command's completion
 	go func() {
@@ -128,12 +129,4 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 	}()
 
 	return rwc, nil
-}
-
-// cleanUpServer removes the temporary server directory.
-func (c *Client) cleanUpServer() {
-	err := os.RemoveAll(c.serverDir)
-	if err != nil {
-		c.Logger.Errorf("Failed to remove the server directory: %s", err.Error())
-	}
 }

@@ -1,6 +1,8 @@
 package nxlsclient
 
-import "io"
+import (
+	"io"
+)
 
 // ReadWriteCloser combines stdin and stdout of a command into a single io.ReadWriteCloser
 type ReadWriteCloser struct {

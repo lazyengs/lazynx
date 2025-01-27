@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/lazyengs/pkg/nxlsclient"
 	"go.uber.org/zap"
@@ -13,6 +14,7 @@ import (
 func main() {
 	_logger, _ := zap.NewDevelopment()
 	logger := _logger.Sugar()
+	defer logger.Sync()
 
 	currentNxWorkspacePath, err := filepath.Abs("../..")
 	if err != nil {
@@ -23,16 +25,24 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Ctrl+c like signal detection
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
+	signalChan := make(chan os.Signal, 2)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	ch := make(chan *nxlsclient.InitializeCommandResult)
+	go client.Start(ctx, ch)
 
 	go func() {
 		<-signalChan
-		client.Logger.Infow("Received interrupt signal")
-		// Stops intercepting the signal
-		signal.Stop(signalChan)
+		logger.Infow("Received interrupt signal")
+		client.Stop()
 		cancel()
+		signal.Stop(signalChan)
 	}()
 
-	client.Start(ctx)
+	init, ok := <-ch
+	if ok {
+		logger.Infow("Initialize command result", "init", init)
+	}
+
+	<-ctx.Done()
 }

@@ -72,7 +72,6 @@ func (c *Client) sendInitializeCommand(ctx context.Context) (*InitializeCommandR
 		c.Logger.Infof("An error ocurred while executing the initialization command: %s", err.Error())
 		return nil, err
 	}
-	c.Logger.Infow("Initialization processed correctly", "result", result)
 
 	return result, nil
 }
