@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/sourcegraph/jsonrpc2"
+	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )
 
@@ -11,7 +12,7 @@ type Client struct {
 	Logger          *zap.SugaredLogger
 	conn            *jsonrpc2.Conn
 	serverDir       string
-	nxWorkspacePath string
+	NxWorkspacePath string
 	isVerbose       bool
 }
 
@@ -27,13 +28,13 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 
 	return &Client{
 		Logger:          sugar,
-		nxWorkspacePath: nxWorkspacePath,
+		NxWorkspacePath: nxWorkspacePath,
 		isVerbose:       verbose,
 	}
 }
 
 // Start spawns the nxls server process, sends the initialize command to the LSP server and listen for incoming messages.
-func (c *Client) Start(ctx context.Context, ch chan *InitializeCommandResult) error {
+func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParams, ch chan *InitializeCommandResult) error {
 	c.Logger.Debugw("Starting client")
 
 	err := c.unpackServer()
@@ -55,7 +56,7 @@ func (c *Client) Start(ctx context.Context, ch chan *InitializeCommandResult) er
 
 	c.connectToLSPServer(ctx, rwc)
 
-	initResponse, err := c.sendInitializeCommand(ctx)
+	initResponse, err := c.sendInitializeCommand(ctx, initParams)
 	ch <- initResponse
 	close(ch)
 	if err != nil {

@@ -95,10 +95,10 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error) {
 	serverPath := filepath.Join(c.serverDir, "main.js")
 
-	c.Logger.Debugw("Starting nxls", "workspace", c.nxWorkspacePath, "serverPath", serverPath)
+	c.Logger.Debugw("Starting nxls", "workspace", c.NxWorkspacePath, "serverPath", serverPath)
 
 	cmd := exec.CommandContext(ctx, "node", serverPath, "--stdio")
-	cmd.Dir = c.nxWorkspacePath
+	cmd.Dir = c.NxWorkspacePath
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

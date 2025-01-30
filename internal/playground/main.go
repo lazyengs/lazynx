@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/lazyengs/pkg/nxlsclient"
+	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +30,21 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 
 	ch := make(chan *nxlsclient.InitializeCommandResult)
-	go client.Start(ctx, ch)
+	go func() {
+		params := &protocol.InitializeParams{
+			RootURI: protocol.DocumentURI(client.NxWorkspacePath),
+			Capabilities: protocol.ClientCapabilities{
+				Workspace: &protocol.WorkspaceClientCapabilities{
+					Configuration: true,
+				},
+				TextDocument: &protocol.TextDocumentClientCapabilities{},
+			},
+			InitializationOptions: map[string]any{
+				"workspacePath": client.NxWorkspacePath,
+			},
+		}
+		client.Start(ctx, params, ch)
+	}()
 
 	go func() {
 		<-signalChan

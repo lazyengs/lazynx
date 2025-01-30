@@ -43,7 +43,7 @@ type InitializeCommandResult struct {
 	Pid int `json:"pid"`
 }
 
-func (c *Client) sendInitializeCommand(ctx context.Context) (*InitializeCommandResult, error) {
+func (c *Client) sendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
 	type InitializationOptions struct {
 		workspace string
 	}
@@ -53,19 +53,6 @@ func (c *Client) sendInitializeCommand(ctx context.Context) (*InitializeCommandR
 	}
 
 	c.Logger.Debugw("Sending initialize command")
-
-	params := &protocol.InitializeParams{
-		RootURI: protocol.DocumentURI(c.nxWorkspacePath),
-		Capabilities: protocol.ClientCapabilities{
-			Workspace: &protocol.WorkspaceClientCapabilities{
-				Configuration: true,
-			},
-			TextDocument: &protocol.TextDocumentClientCapabilities{},
-		},
-		InitializationOptions: map[string]any{
-			"workspacePath": c.nxWorkspacePath,
-		},
-	}
 
 	var result *InitializeCommandResult
 	if err := c.conn.Call(ctx, "initialize", params, &result); err != nil {
