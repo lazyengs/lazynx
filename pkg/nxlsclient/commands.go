@@ -52,7 +52,7 @@ func (c *Client) sendInitializeCommand(ctx context.Context) (*InitializeCommandR
 		initializationOptions InitializationOptions
 	}
 
-	c.Logger.Infow("Sending initialize command")
+	c.Logger.Debugw("Sending initialize command")
 
 	params := &protocol.InitializeParams{
 		RootURI: protocol.DocumentURI(c.nxWorkspacePath),
@@ -69,7 +69,7 @@ func (c *Client) sendInitializeCommand(ctx context.Context) (*InitializeCommandR
 
 	var result *InitializeCommandResult
 	if err := c.conn.Call(ctx, "initialize", params, &result); err != nil {
-		c.Logger.Infof("An error ocurred while executing the initialization command: %s", err.Error())
+		c.Logger.Errorf("An error ocurred while executing the initialization command: %s", err.Error())
 		return nil, err
 	}
 

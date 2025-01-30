@@ -16,7 +16,7 @@ type windowLogMessageNotification struct {
 func (c *Client) connectToLSPServer(ctx context.Context, rwc *ReadWriteCloser) {
 	stream := jsonrpc2.NewBufferedStream(rwc, jsonrpc2.VSCodeObjectCodec{})
 	c.conn = jsonrpc2.NewConn(ctx, stream, jsonrpc2.HandlerWithError(c.handleServerRequest))
-	c.Logger.Infow("Connected to nxls server")
+	c.Logger.Debugw("Connected to nxls server")
 }
 
 // handleServerRequest handles incoming requests from the server.

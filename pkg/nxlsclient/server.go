@@ -22,8 +22,7 @@ func (c *Client) unpackServer() error {
 		c.Logger.Errorf("Failed to create temp directory: %s", err.Error())
 		return errors.New("Failed to create the temp directory")
 	}
-	c.serverDir = tempDir
-	c.Logger.Infow("Created temporary directory", "tempDir", tempDir)
+	c.Logger.Debugw("Created temporary directory", "tempDir", tempDir)
 
 	err = os.CopyFS(tempDir, serverfs)
 	if err != nil {
@@ -38,7 +37,7 @@ func (c *Client) unpackServer() error {
 
 // runSystemReport runs a system report by executing node commands in the server folder.
 func (c *Client) runSystemReport(ctx context.Context) error {
-	c.Logger.Infow("System Report:", "serverDir", c.serverDir)
+	c.Logger.Debugw("System Report:", "serverDir", c.serverDir)
 	err := c.runOSCommandInServerFolder(ctx, "node", "-v")
 	if err != nil {
 		return err
@@ -48,13 +47,13 @@ func (c *Client) runSystemReport(ctx context.Context) error {
 
 // installDependencies installs npm dependencies in the server folder.
 func (c *Client) installDependencies(ctx context.Context) error {
-	c.Logger.Infow("Installing dependencies at ", "serverDir", c.serverDir)
+	c.Logger.Debugw("Installing dependencies at ", "serverDir", c.serverDir)
 	return c.runOSCommandInServerFolder(ctx, "npm", "install")
 }
 
 // runOSCommandInServerFolder runs an OS command in the server folder and logs the output.
 func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, args ...string) error {
-	c.Logger.Infow("Running command", "serverDir", c.serverDir, "command", name, "args", args)
+	c.Logger.Debugw("Running command", "serverDir", c.serverDir, "command", name, "args", args)
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = c.serverDir
 
@@ -75,12 +74,14 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 		return errors.New("Failed to start command")
 	}
 
-	go func() {
-		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
-		for scanner.Scan() {
-			c.Logger.Infow(scanner.Text())
-		}
-	}()
+	if c.isVerbose {
+		go func() {
+			scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
+			for scanner.Scan() {
+				c.Logger.Debugw(scanner.Text())
+			}
+		}()
+	}
 
 	if err := cmd.Wait(); err != nil {
 		c.Logger.Errorf("Failed to run the command %s: %s", name, err.Error())
@@ -94,7 +95,7 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error) {
 	serverPath := filepath.Join(c.serverDir, "main.js")
 
-	c.Logger.Infow("Starting nxls", "workspace", c.nxWorkspacePath, "serverPath", serverPath)
+	c.Logger.Debugw("Starting nxls", "workspace", c.nxWorkspacePath, "serverPath", serverPath)
 
 	cmd := exec.CommandContext(ctx, "node", serverPath, "--stdio")
 	cmd.Dir = c.nxWorkspacePath
@@ -119,7 +120,6 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 		stdin:  stdin,
 		stdout: stdout,
 	}
-	c.cmd = cmd
 
 	// Start a goroutine to handle the command's completion
 	go func() {

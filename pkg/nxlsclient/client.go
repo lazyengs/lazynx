@@ -2,7 +2,6 @@ package nxlsclient
 
 import (
 	"context"
-	"os/exec"
 
 	"github.com/sourcegraph/jsonrpc2"
 	"go.uber.org/zap"
@@ -11,7 +10,6 @@ import (
 type Client struct {
 	Logger          *zap.SugaredLogger
 	conn            *jsonrpc2.Conn
-	cmd             *exec.Cmd
 	serverDir       string
 	nxWorkspacePath string
 	isVerbose       bool
@@ -25,7 +23,7 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 	}
 	sugar := logger.Sugar()
 
-	sugar.Infow("Creating new client")
+	sugar.Debugw("Creating new client")
 
 	return &Client{
 		Logger:          sugar,
@@ -36,7 +34,7 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 
 // Start spawns the nxls server process, sends the initialize command to the LSP server and listen for incoming messages.
 func (c *Client) Start(ctx context.Context, ch chan *InitializeCommandResult) error {
-	c.Logger.Infow("Starting client")
+	c.Logger.Debugw("Starting client")
 
 	err := c.unpackServer()
 	if err != nil {
@@ -73,10 +71,10 @@ func (c *Client) Start(ctx context.Context, ch chan *InitializeCommandResult) er
 
 // Stop gracefully Stops the client, cleaning up resources and closing connections.
 func (c *Client) Stop() {
-	c.Logger.Infow("Stopping client")
+	c.Logger.Debugw("Stopping client")
 	if c.conn != nil {
 		c.conn.Close()
 	}
-	c.Logger.Infow("Clean up completed")
+	c.Logger.Debugw("Clean up completed")
 	c.Logger.Sync()
 }
