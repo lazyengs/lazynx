@@ -113,7 +113,7 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 
 	if err := cmd.Start(); err != nil {
 		c.Logger.Errorf("Failed to start command: %s", err.Error())
-		return nil, errors.New("Failed to start command")
+		return nil, errors.New("Failed to run the start command")
 	}
 
 	rwc = &ReadWriteCloser{
