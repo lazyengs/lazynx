@@ -2,63 +2,33 @@ package nxlsclient
 
 import (
 	"context"
-
-	"go.lsp.dev/protocol"
 )
 
-type InitializeCommandResult struct {
-	Capabilities struct {
-		Workspace struct {
-			FileOperations struct {
-				DidCreate struct {
-					Filters []struct {
-						Pattern struct {
-							Glob    string `json:"glob"`
-							Matches string `json:"matches"`
-						} `json:"pattern"`
-					} `json:"filters"`
-				} `json:"didCreate"`
-				DidDelete struct {
-					Filters []struct {
-						Pattern struct {
-							Glob    string `json:"glob"`
-							Matches string `json:"matches"`
-						} `json:"pattern"`
-					} `json:"filters"`
-				} `json:"didDelete"`
-			} `json:"fileOperations"`
-		} `json:"workspace"`
-		CompletionProvider struct {
-			TriggerCharacters []string `json:"triggerCharacters"`
-			ResolveProvider   bool     `json:"resolveProvider"`
-		} `json:"completionProvider"`
-		TextDocumentSync     int `json:"textDocumentSync"`
-		DocumentLinkProvider struct {
-			ResolveProvider  bool `json:"resolveProvider"`
-			WorkDoneProgress bool `json:"workDoneProgress"`
-		} `json:"documentLinkProvider"`
-		DefinitionProvider bool `json:"definitionProvider"`
-		HoverProvider      bool `json:"hoverProvider"`
-	} `json:"capabilities"`
-	Pid int `json:"pid"`
-}
+func (c *Client) sendRequest(ctx context.Context, method string, params ...any) (any, error) {
+	var result any
+	c.Logger.Debugw("Sending request", "method", method, "params", params)
 
-func (c *Client) sendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
-	type InitializationOptions struct {
-		workspace string
-	}
-
-	type Params struct {
-		initializationOptions InitializationOptions
-	}
-
-	c.Logger.Debugw("Sending initialize command")
-
-	var result *InitializeCommandResult
-	if err := c.conn.Call(ctx, "initialize", params, &result); err != nil {
-		c.Logger.Errorf("An error ocurred while executing the initialization command: %s", err.Error())
+	if err := c.conn.Call(ctx, method, params, &result); err != nil {
+		c.Logger.Errorw("An error occurred while executing the request",
+			"method", method, "params", params,
+			"error", err.Error(),
+		)
 		return nil, err
 	}
 
 	return result, nil
+}
+
+func (c *Client) sendNotification(ctx context.Context, method string, params []any) error {
+	c.Logger.Debugw("Sending notification", method, "params", params)
+
+	if err := c.conn.Notify(ctx, method, params); err != nil {
+		c.Logger.Errorw("An error occurred while sending the notification",
+			"method", method, "params", params,
+			"error", err.Error(),
+		)
+		return err
+	}
+
+	return nil
 }
