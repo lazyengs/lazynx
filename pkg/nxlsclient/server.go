@@ -20,16 +20,13 @@ var serverfs embed.FS
 func (c *Client) unpackServer() error {
 	tempDir, err := os.MkdirTemp("", "nxls-server")
 	if err != nil {
-		c.Logger.Errorf("Failed to create temp directory: %s", err.Error())
-		return errors.New("Failed to create the temp directory")
+		return fmt.Errorf("failed to create the temp directory: %w", err)
 	}
 	c.Logger.Debugw("Created temporary directory", "tempDir", tempDir)
 
 	err = os.CopyFS(tempDir, serverfs)
 	if err != nil {
-		c.Logger.Errorf("Failed to copy the server to the temp directory: %s", err.Error())
-		return errors.New("Failed to copy the server to the temp directory")
-
+		return fmt.Errorf("failed to copy the server to the temp directory: %w", err)
 	}
 	c.serverDir = path.Join(tempDir, "server", "nxls")
 
@@ -60,19 +57,16 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		c.Logger.Fatalf("Failed to get stdout pipe: %s", err.Error())
-		return errors.New("Failed to get stdout pipe")
+		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		c.Logger.Errorf("Failed to get stderr pipe: %s", err.Error())
-		return errors.New("Failed to get stderr pipe")
+		return fmt.Errorf("failed to get stderr pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		c.Logger.Errorf("Failed to start command: %s", err.Error())
-		return errors.New("Failed to start command")
+		return fmt.Errorf("failed to start command: %w", err)
 	}
 
 	if c.isVerbose {
@@ -85,8 +79,7 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 	}
 
 	if err := cmd.Wait(); err != nil {
-		c.Logger.Errorf("Failed to run the command %s: %s", name, err.Error())
-		return errors.New("Failed to run the command")
+		return fmt.Errorf("failed to run the command: %w", err)
 	}
 
 	return nil
@@ -103,18 +96,15 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		c.Logger.Fatalf("failed to create stdin pipe: %s", err.Error())
-		return nil, errors.New("Failed to get stdin pipe")
+		return nil, fmt.Errorf("failed to get stdin pipe: %w", err)
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		c.Logger.Fatalf("Failed to get stdout pipe: %s", err.Error())
-		return nil, errors.New("Failed to get stdout pipe")
+		return nil, fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		c.Logger.Errorf("Failed to start command: %s", err.Error())
-		return nil, errors.New("Failed to run the start command")
+		return nil, fmt.Errorf("failed to run the start command: %w", err)
 	}
 
 	rwc = &ReadWriteCloser{
