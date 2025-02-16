@@ -2,6 +2,7 @@ package nxlsclient
 
 import (
 	"context"
+	"fmt"
 )
 
 func (c *Client) sendRequest(ctx context.Context, method string, params ...any) (any, error) {
@@ -13,7 +14,7 @@ func (c *Client) sendRequest(ctx context.Context, method string, params ...any) 
 			"method", method, "params", params,
 			"error", err.Error(),
 		)
-		return nil, err
+		return nil, fmt.Errorf("an error occurred while executing the request: %w", err)
 	}
 
 	return result, nil
@@ -27,7 +28,7 @@ func (c *Client) sendNotification(ctx context.Context, method string, params []a
 			"method", method, "params", params,
 			"error", err.Error(),
 		)
-		return err
+		return fmt.Errorf("an error occurred while sending the notification: %w", err)
 	}
 
 	return nil

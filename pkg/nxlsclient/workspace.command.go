@@ -2,7 +2,7 @@ package nxlsclient
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	nxtypes "github.com/lazyengs/pkg/nxlsclient/nx-types"
 	"go.lsp.dev/protocol"
@@ -20,7 +20,7 @@ func (c *Client) sendWorkspaceCommand(ctx context.Context, params *protocol.Init
 
 	workspaceResult, ok := result.(*nxtypes.NxWorkspace)
 	if !ok {
-		return nil, errors.New("failed to cast result to *WorkspaceCommandResult")
+		return nil, fmt.Errorf("failed to cast result to *WorkspaceCommandResult: %w", err)
 	}
 
 	return workspaceResult, nil
