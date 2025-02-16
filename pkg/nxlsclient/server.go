@@ -153,3 +153,13 @@ func (c *Client) stopNxls(ctx context.Context) error {
 
 	return nil
 }
+
+// cleanUpServer removes the temporary server directory.
+func (c *Client) cleanUpServer() error {
+	err := os.RemoveAll(c.serverDir)
+	if err != nil {
+		return fmt.Errorf("failed to remove the server directory: %w", err)
+	}
+
+	return nil
+}

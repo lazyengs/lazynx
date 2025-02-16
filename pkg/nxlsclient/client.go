@@ -75,6 +75,9 @@ func (c *Client) Stop(ctx context.Context) {
 
 	c.stopNxls(ctx)
 
+	if err := c.cleanUpServer(); err != nil {
+		c.Logger.Errorw("An error occurred while cleaning up the server", "error", err.Error())
+	}
 	c.Logger.Debugw("Clean up completed")
 	c.Logger.Sync()
 }
