@@ -20,7 +20,7 @@ func (c *Client) sendRequest(ctx context.Context, method string, params any, res
 }
 
 func (c *Client) sendNotification(ctx context.Context, method string, params []any) error {
-	c.Logger.Debugw("Sending notification", method, "params", params)
+	c.Logger.Debugw("Sending notification", "method", method, "params", params)
 
 	if err := c.conn.Notify(ctx, method, params); err != nil {
 		c.Logger.Errorw("An error occurred while sending the notification",
