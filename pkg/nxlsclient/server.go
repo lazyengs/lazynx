@@ -5,6 +5,7 @@ import (
 	"context"
 	"embed"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -129,4 +130,26 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 	}()
 
 	return rwc, nil
+}
+
+func (c *Client) stopNxls(ctx context.Context) error {
+	c.Logger.Debugw("Stopping nxls")
+
+	c.conn.Call(ctx, "shutdown", nil, nil)
+	c.conn.Notify(ctx, "exit", nil)
+
+	cmd := exec.CommandContext(ctx, "npx", "nx", "daemon", "--stop")
+	cmd.Dir = c.NxWorkspacePath
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to stop nx daemon: %s", err.Error())
+	}
+
+	if c.conn != nil {
+		c.conn.Close()
+	}
+
+	c.Logger.Debugw("Cleanup process completed")
+
+	return nil
 }
