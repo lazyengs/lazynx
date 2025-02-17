@@ -5,6 +5,7 @@ import (
 	"context"
 	"embed"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -141,8 +142,7 @@ func (c *Client) stopNxls(ctx context.Context) error {
 	cmd.Dir = c.NxWorkspacePath
 
 	if err := cmd.Run(); err != nil {
-		c.Logger.Errorf("Failed to stop nx daemon: %s", err.Error())
-		return errors.New("failed to stop nx daemon")
+		return fmt.Errorf("failed to stop nx daemon: %s", err.Error())
 	}
 
 	if c.conn != nil {
