@@ -49,7 +49,7 @@ func main() {
 	go func() {
 		<-signalChan
 		logger.Infow("Received interrupt signal")
-		client.Stop()
+		client.Stop(ctx)
 		cancel()
 		signal.Stop(signalChan)
 	}()

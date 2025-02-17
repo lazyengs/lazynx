@@ -39,18 +39,18 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 
 	err := c.unpackServer()
 	if err != nil {
-		c.Stop()
+		c.Stop(ctx)
 		return err
 	}
 	err = c.installDependencies(ctx)
 	if err != nil {
-		c.Stop()
+		c.Stop(ctx)
 		return err
 	}
 
 	rwc, err := c.startNxls(ctx)
 	if err != nil {
-		c.Stop()
+		c.Stop(ctx)
 		return err
 	}
 
@@ -60,9 +60,8 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 	ch <- initResponse
 	close(ch)
 	if err != nil {
-		c.Stop()
+		c.Stop(ctx)
 		return err
-
 	}
 
 	<-ctx.Done()
@@ -71,11 +70,11 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 }
 
 // Stop gracefully Stops the client, cleaning up resources and closing connections.
-func (c *Client) Stop() {
+func (c *Client) Stop(ctx context.Context) {
 	c.Logger.Debugw("Stopping client")
-	if c.conn != nil {
-		c.conn.Close()
-	}
+
+	c.stopNxls(ctx)
+
 	c.Logger.Debugw("Clean up completed")
 	c.Logger.Sync()
 }
