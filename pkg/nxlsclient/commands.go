@@ -5,8 +5,7 @@ import (
 	"fmt"
 )
 
-func (c *Client) sendRequest(ctx context.Context, method string, params ...any) (any, error) {
-	var result any
+func (c *Client) sendRequest(ctx context.Context, method string, params any, result any) error {
 	c.Logger.Debugw("Sending request", "method", method, "params", params)
 
 	if err := c.conn.Call(ctx, method, params, &result); err != nil {
@@ -14,10 +13,10 @@ func (c *Client) sendRequest(ctx context.Context, method string, params ...any) 
 			"method", method, "params", params,
 			"error", err.Error(),
 		)
-		return nil, fmt.Errorf("an error occurred while executing the request: %w", err)
+		return fmt.Errorf("an error occurred while executing the request: %w", err)
 	}
 
-	return result, nil
+	return nil
 }
 
 func (c *Client) sendNotification(ctx context.Context, method string, params []any) error {

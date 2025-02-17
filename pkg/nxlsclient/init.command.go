@@ -2,7 +2,6 @@ package nxlsclient
 
 import (
 	"context"
-	"fmt"
 
 	"go.lsp.dev/protocol"
 )
@@ -45,15 +44,11 @@ type InitializeCommandResult struct {
 }
 
 func (c *Client) sendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
-	result, err := c.sendRequest(ctx, "initialize", params)
+	var result *InitializeCommandResult
+	err := c.sendRequest(ctx, "initialize", params, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	initializeResult, ok := result.(*InitializeCommandResult)
-	if !ok {
-		return nil, fmt.Errorf("failed to cast result to *InitializeCommandResult: %w", err)
-	}
-
-	return initializeResult, nil
+	return result, nil
 }
