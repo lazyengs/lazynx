@@ -131,7 +131,7 @@ func (c *Client) stopNxls(ctx context.Context) error {
 	cmd.Dir = c.NxWorkspacePath
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to stop nx daemon: %s", err.Error())
+		return fmt.Errorf("failed to stop nx daemon: %w", err)
 	}
 
 	err := c.cleanUpServerFolder()
