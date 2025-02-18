@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"embed"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -135,6 +134,11 @@ func (c *Client) stopNxls(ctx context.Context) error {
 		return fmt.Errorf("failed to stop nx daemon: %s", err.Error())
 	}
 
+	err := c.cleanUpServerFolder()
+	if err != nil {
+		return fmt.Errorf("failed to clean up server folder: %w", err)
+	}
+
 	if c.conn != nil {
 		c.conn.Close()
 	}
@@ -144,8 +148,8 @@ func (c *Client) stopNxls(ctx context.Context) error {
 	return nil
 }
 
-// cleanUpServer removes the temporary server directory.
-func (c *Client) cleanUpServer() error {
+// cleanUpServerFolder removes the temporary server directory.
+func (c *Client) cleanUpServerFolder() error {
 	err := os.RemoveAll(c.serverDir)
 	if err != nil {
 		return fmt.Errorf("failed to remove the server directory: %w", err)

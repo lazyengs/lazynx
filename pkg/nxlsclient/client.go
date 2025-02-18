@@ -73,11 +73,11 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 func (c *Client) Stop(ctx context.Context) {
 	c.Logger.Debugw("Stopping client")
 
-	c.stopNxls(ctx)
-
-	if err := c.cleanUpServer(); err != nil {
-		c.Logger.Errorw("An error occurred while cleaning up the server", "error", err.Error())
+	err := c.stopNxls(ctx)
+	if err != nil {
+		c.Logger.Errorw("An error occurred while stopping nxls", "error", err.Error())
 	}
+
 	c.Logger.Debugw("Clean up completed")
 	c.Logger.Sync()
 }
