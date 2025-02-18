@@ -59,5 +59,15 @@ func main() {
 		logger.Infow("Initialize command result", "init", init)
 	}
 
+	result, err := client.SendWorkspaceCommand(ctx, &nxlsclient.WorkspaceCommandParams{
+		Reset: false,
+	})
+	if err != nil {
+		logger.Error(err)
+	}
+	if result != nil {
+		logger.Infow("Workspace command result", "result", result)
+	}
+
 	<-ctx.Done()
 }

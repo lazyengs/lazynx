@@ -4,14 +4,13 @@ import (
 	"context"
 
 	nxtypes "github.com/lazyengs/pkg/nxlsclient/nx-types"
-	"go.lsp.dev/protocol"
 )
 
 type WorkspaceCommandParams struct {
-	protocol.WorkDoneProgressParams
+	Reset bool `json:"reset"`
 }
 
-func (c *Client) sendWorkspaceCommand(ctx context.Context, params *protocol.InitializeParams) (*nxtypes.NxWorkspace, error) {
+func (c *Client) SendWorkspaceCommand(ctx context.Context, params *WorkspaceCommandParams) (*nxtypes.NxWorkspace, error) {
 	var result *nxtypes.NxWorkspace
 
 	err := c.sendRequest(ctx, "nx/workspace", params, &result)
