@@ -6,6 +6,10 @@ import (
 	nxtypes "github.com/lazyengs/pkg/nxlsclient/nx-types"
 )
 
+const (
+	WorkspaceCommandMethod = "nx/workspace"
+)
+
 type WorkspaceCommandParams struct {
 	Reset bool `json:"reset"`
 }
@@ -13,7 +17,7 @@ type WorkspaceCommandParams struct {
 func (c *Commander) SendWorkspaceCommand(ctx context.Context, params *WorkspaceCommandParams) (*nxtypes.NxWorkspace, error) {
 	var result *nxtypes.NxWorkspace
 
-	err := c.sendRequest(ctx, "nx/workspace", params, &result)
+	err := c.sendRequest(ctx, WorkspaceCommandMethod, params, &result)
 	if err != nil {
 		return nil, err
 	}

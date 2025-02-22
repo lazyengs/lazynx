@@ -6,6 +6,10 @@ import (
 	"go.lsp.dev/protocol"
 )
 
+const (
+	InitializeCommandMethod = "initialize"
+)
+
 type InitializeCommandResult struct {
 	Capabilities struct {
 		Workspace struct {
@@ -45,7 +49,7 @@ type InitializeCommandResult struct {
 
 func (c *Commander) SendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
 	var result *InitializeCommandResult
-	err := c.sendRequest(ctx, "initialize", params, &result)
+	err := c.sendRequest(ctx, InitializeCommandMethod, params, &result)
 	if err != nil {
 		return nil, err
 	}
