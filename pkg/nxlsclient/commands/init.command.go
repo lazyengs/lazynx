@@ -1,4 +1,4 @@
-package nxlsclient
+package commands
 
 import (
 	"context"
@@ -43,7 +43,7 @@ type InitializeCommandResult struct {
 	Pid int `json:"pid"`
 }
 
-func (c *Client) sendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
+func (c *Commander) SendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
 	var result *InitializeCommandResult
 	err := c.sendRequest(ctx, "initialize", params, &result)
 	if err != nil {

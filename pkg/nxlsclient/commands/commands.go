@@ -1,11 +1,26 @@
-package nxlsclient
+package commands
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/sourcegraph/jsonrpc2"
+	"go.uber.org/zap"
 )
 
-func (c *Client) sendRequest(ctx context.Context, method string, params any, result any) error {
+type Commander struct {
+	Logger *zap.SugaredLogger
+	conn   *jsonrpc2.Conn
+}
+
+func NewCommander(conn *jsonrpc2.Conn, logger *zap.SugaredLogger) *Commander {
+	return &Commander{
+		Logger: logger,
+		conn:   conn,
+	}
+}
+
+func (c *Commander) sendRequest(ctx context.Context, method string, params any, result any) error {
 	c.Logger.Debugw("Sending request", "method", method, "params", params)
 
 	if err := c.conn.Call(ctx, method, params, &result); err != nil {
@@ -19,7 +34,7 @@ func (c *Client) sendRequest(ctx context.Context, method string, params any, res
 	return nil
 }
 
-func (c *Client) sendNotification(ctx context.Context, method string, params []any) error {
+func (c *Commander) sendNotification(ctx context.Context, method string, params []any) error {
 	c.Logger.Debugw("Sending notification", "method", method, "params", params)
 
 	if err := c.conn.Notify(ctx, method, params); err != nil {

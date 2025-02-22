@@ -1,4 +1,4 @@
-package nxlsclient
+package commands
 
 import (
 	"context"
@@ -10,7 +10,7 @@ type WorkspaceCommandParams struct {
 	Reset bool `json:"reset"`
 }
 
-func (c *Client) SendWorkspaceCommand(ctx context.Context, params *WorkspaceCommandParams) (*nxtypes.NxWorkspace, error) {
+func (c *Commander) SendWorkspaceCommand(ctx context.Context, params *WorkspaceCommandParams) (*nxtypes.NxWorkspace, error) {
 	var result *nxtypes.NxWorkspace
 
 	err := c.sendRequest(ctx, "nx/workspace", params, &result)
