@@ -34,7 +34,7 @@ func (c *Commander) sendRequest(ctx context.Context, method string, params any, 
 	return nil
 }
 
-func (c *Commander) sendNotification(ctx context.Context, method string, params []any) error {
+func (c *Commander) sendNotification(ctx context.Context, method string, params any) error {
 	c.Logger.Debugw("Sending notification", "method", method, "params", params)
 
 	if err := c.conn.Notify(ctx, method, params); err != nil {
