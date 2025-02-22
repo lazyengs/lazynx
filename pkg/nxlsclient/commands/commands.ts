@@ -1,28 +1,3 @@
-export const NxChangeWorkspace: NotificationType<string> = new NotificationType(
-  "nx/changeWorkspace",
-);
-
-export const NxWorkspaceRefreshNotification: NotificationType<void> =
-  new NotificationType("nx/refreshWorkspace");
-
-export const NxWorkspaceRefreshStartedNotification: NotificationType<void> =
-  new NotificationType("nx/refreshWorkspaceStarted");
-
-export const NxStopDaemonRequest: RequestType<undefined, undefined, unknown> =
-  new RequestType("nx/stopDaemon");
-
-export const NxWorkspaceRequest: RequestType<
-  { reset: boolean },
-  NxWorkspace,
-  unknown
-> = new RequestType("nx/workspace");
-
-export const NxWorkspaceSerializedRequest: RequestType<
-  { reset: boolean },
-  string,
-  unknown
-> = new RequestType("nx/workspaceSerialized");
-
 export const NxWorkspacePathRequest: RequestType<undefined, string, unknown> =
   new RequestType("nx/workspacePath");
 

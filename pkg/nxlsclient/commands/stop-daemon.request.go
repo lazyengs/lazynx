@@ -5,13 +5,13 @@ import (
 )
 
 const (
-	StopNxDaemonCommandMethod = "nx/stopDaemon"
+	StopNxDaemonRequestMethod = "nx/stopDaemon"
 )
 
-func (c *Commander) SendStopNxDaemonCommand(ctx context.Context) error {
+func (c *Commander) SendStopNxDaemonRequest(ctx context.Context) error {
 	var result any
 
-	err := c.sendRequest(ctx, StopNxDaemonCommandMethod, nil, result)
+	err := c.sendRequest(ctx, StopNxDaemonRequestMethod, nil, result)
 	if err != nil {
 		return err
 	}

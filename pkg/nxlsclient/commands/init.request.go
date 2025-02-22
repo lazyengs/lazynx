@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	InitializeCommandMethod = "initialize"
+	InitializeRequestMethod = "initialize"
 )
 
-type InitializeCommandResult struct {
+type InitializeRequestResult struct {
 	Capabilities struct {
 		Workspace struct {
 			FileOperations struct {
@@ -47,9 +47,9 @@ type InitializeCommandResult struct {
 	Pid int `json:"pid"`
 }
 
-func (c *Commander) SendInitializeCommand(ctx context.Context, params *protocol.InitializeParams) (*InitializeCommandResult, error) {
-	var result *InitializeCommandResult
-	err := c.sendRequest(ctx, InitializeCommandMethod, params, &result)
+func (c *Commander) SendInitializeRequest(ctx context.Context, params *protocol.InitializeParams) (*InitializeRequestResult, error) {
+	var result *InitializeRequestResult
+	err := c.sendRequest(ctx, InitializeRequestMethod, params, &result)
 	if err != nil {
 		return nil, err
 	}

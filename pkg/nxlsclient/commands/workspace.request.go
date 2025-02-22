@@ -7,17 +7,17 @@ import (
 )
 
 const (
-	WorkspaceCommandMethod = "nx/workspace"
+	WorkspaceRequestMethod = "nx/workspace"
 )
 
-type WorkspaceCommandParams struct {
+type WorkspaceRequestParams struct {
 	Reset bool `json:"reset"`
 }
 
-func (c *Commander) SendWorkspaceCommand(ctx context.Context, params *WorkspaceCommandParams) (*nxtypes.NxWorkspace, error) {
+func (c *Commander) SendWorkspaceRequest(ctx context.Context, params *WorkspaceRequestParams) (*nxtypes.NxWorkspace, error) {
 	var result *nxtypes.NxWorkspace
 
-	err := c.sendRequest(ctx, WorkspaceCommandMethod, params, &result)
+	err := c.sendRequest(ctx, WorkspaceRequestMethod, params, &result)
 	if err != nil {
 		return nil, err
 	}

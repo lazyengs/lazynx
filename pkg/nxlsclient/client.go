@@ -36,7 +36,7 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 }
 
 // Start spawns the nxls server process, sends the initialize command to the LSP server and listen for incoming messages.
-func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParams, ch chan *commands.InitializeCommandResult) error {
+func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParams, ch chan *commands.InitializeRequestResult) error {
 	c.Logger.Debugw("Starting client")
 
 	err := c.unpackServer()
@@ -60,7 +60,7 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 
 	c.Commander = commands.NewCommander(c.conn, c.Logger)
 
-	initResponse, err := c.Commander.SendInitializeCommand(ctx, initParams)
+	initResponse, err := c.Commander.SendInitializeRequest(ctx, initParams)
 
 	ch <- initResponse
 	close(ch)

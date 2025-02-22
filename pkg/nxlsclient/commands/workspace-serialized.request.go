@@ -3,11 +3,11 @@ package commands
 import "context"
 
 const (
-	WorkspaceSerializedCommandMethod = "nx/workspaceSerialized"
+	WorkspaceSerializedRequestMethod = "nx/workspaceSerialized"
 )
 
-func (c *Commander) SendWorkspaceSerializedCommand(ctx context.Context, params WorkspaceCommandParams) (string, error) {
+func (c *Commander) SendWorkspaceSerializedRequest(ctx context.Context, params WorkspaceRequestParams) (string, error) {
 	var result string
-	err := c.sendRequest(ctx, WorkspaceSerializedCommandMethod, params, &result)
+	err := c.sendRequest(ctx, WorkspaceSerializedRequestMethod, params, &result)
 	return result, err
 }

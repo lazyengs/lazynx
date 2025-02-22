@@ -30,7 +30,7 @@ func main() {
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 
-	ch := make(chan *commands.InitializeCommandResult)
+	ch := make(chan *commands.InitializeRequestResult)
 	go func() {
 		params := &protocol.InitializeParams{
 			RootURI: protocol.DocumentURI(client.NxWorkspacePath),
@@ -62,7 +62,7 @@ func main() {
 
 	commander := client.Commander
 
-	result, err := commander.SendWorkspaceCommand(ctx, &commands.WorkspaceCommandParams{
+	result, err := commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
 		Reset: false,
 	})
 	if err != nil {
