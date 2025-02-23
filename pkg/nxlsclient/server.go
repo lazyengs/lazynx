@@ -122,21 +122,26 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 }
 
 func (c *Client) stopNxls(ctx context.Context) error {
+	// Log the start of the stopping process
 	c.Logger.Debugw("Stopping nxls")
 
+	// Send requests to stop the NX daemon, shutdown, and exit
 	c.Commander.SendStopNxDaemonRequest(ctx)
 	c.Commander.SendShutdownRequest(ctx)
 	c.Commander.SendExitNotification(ctx)
 
+	// Clean up the server folder
 	err := c.cleanUpServerFolder()
 	if err != nil {
 		return fmt.Errorf("failed to clean up server folder: %w", err)
 	}
 
+	// Close the connection if it exists
 	if c.conn != nil {
 		c.conn.Close()
 	}
 
+	// Log the completion of the cleanup process
 	c.Logger.Debugw("Cleanup process completed")
 
 	return nil

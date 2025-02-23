@@ -8,6 +8,7 @@ const (
 	ShutdownRequestMethod = "shutdown"
 )
 
+// SendShutdownRequest sends a shutdown request to the nxls server.
 func (c *Commander) SendShutdownRequest(ctx context.Context) error {
 	var result any
 

@@ -8,6 +8,7 @@ const (
 	StopNxDaemonRequestMethod = "nx/stopDaemon"
 )
 
+// SendStopNxDaemonRequest sends a request to stop the NX daemon.
 func (c *Commander) SendStopNxDaemonRequest(ctx context.Context) error {
 	var result any
 

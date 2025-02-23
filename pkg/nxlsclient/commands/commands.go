@@ -8,11 +8,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// Commander is responsible for sending requests and notifications via JSON-RPC.
 type Commander struct {
-	Logger *zap.SugaredLogger
-	conn   *jsonrpc2.Conn
+	Logger *zap.SugaredLogger // Logger is used to log messages.
+	conn   *jsonrpc2.Conn     // conn is the JSON-RPC connection.
 }
 
+// NewCommander creates a new Commander instance.
 func NewCommander(conn *jsonrpc2.Conn, logger *zap.SugaredLogger) *Commander {
 	return &Commander{
 		Logger: logger,
@@ -20,6 +22,7 @@ func NewCommander(conn *jsonrpc2.Conn, logger *zap.SugaredLogger) *Commander {
 	}
 }
 
+// sendRequest sends a JSON-RPC request and stores the result in the provided result parameter.
 func (c *Commander) sendRequest(ctx context.Context, method string, params any, result any) error {
 	c.Logger.Debugw("Sending request", "method", method, "params", params)
 
@@ -34,6 +37,7 @@ func (c *Commander) sendRequest(ctx context.Context, method string, params any, 
 	return nil
 }
 
+// sendNotification sends a JSON-RPC notification.
 func (c *Commander) sendNotification(ctx context.Context, method string, params any) error {
 	c.Logger.Debugw("Sending notification", "method", method, "params", params)
 
