@@ -125,10 +125,14 @@ func (c *Client) stopNxls(ctx context.Context) error {
 	// Log the start of the stopping process
 	c.Logger.Debugw("Stopping nxls")
 
-	// Send requests to stop the NX daemon, shutdown, and exit
-	c.Commander.SendStopNxDaemonRequest(ctx)
-	c.Commander.SendShutdownRequest(ctx)
-	c.Commander.SendExitNotification(ctx)
+	// Send requests to stop the NX daemon, shutdown, and exit if Commander exists
+	if c.Commander != nil {
+		c.Commander.SendStopNxDaemonRequest(ctx)
+		c.Commander.SendShutdownRequest(ctx)
+		c.Commander.SendExitNotification(ctx)
+	} else {
+		c.Logger.Debugw("Commander is nil, skipping shutdown requests")
+	}
 
 	// Clean up the server folder
 	err := c.cleanUpServerFolder()
@@ -149,10 +153,25 @@ func (c *Client) stopNxls(ctx context.Context) error {
 
 // cleanUpServerFolder removes the temporary server directory.
 func (c *Client) cleanUpServerFolder() error {
-	err := os.RemoveAll(c.serverDir)
+	// Skip if serverDir is empty
+	if c.serverDir == "" {
+		c.Logger.Debugw("Server directory not set, skipping cleanup")
+		return nil
+	}
+
+	// Check if directory exists before attempting to remove
+	_, err := os.Stat(c.serverDir)
+	if os.IsNotExist(err) {
+		c.Logger.Debugw("Server directory doesn't exist, skipping cleanup", "serverDir", c.serverDir)
+		return nil
+	}
+
+	// Remove the directory
+	err = os.RemoveAll(c.serverDir)
 	if err != nil {
 		return fmt.Errorf("failed to remove the server directory: %w", err)
 	}
 
+	c.Logger.Debugw("Server directory removed", "serverDir", c.serverDir)
 	return nil
 }
