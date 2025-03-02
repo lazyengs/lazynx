@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"syscall"
 )
 
 //go:embed server/nxls
@@ -92,6 +93,11 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 
 	cmd := exec.CommandContext(ctx, "node", serverPath, "--stdio")
 	cmd.Dir = c.NxWorkspacePath
+
+	// Set up process group isolation (prevents signal propagation)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true, // Put the child in its own process group
+	}
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
