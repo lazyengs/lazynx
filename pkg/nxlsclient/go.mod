@@ -5,7 +5,10 @@ go 1.23
 require go.uber.org/zap v1.27.0
 
 require (
+	github.com/bradleyjkemp/cupaloy/v2 v2.8.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/segmentio/asm v1.1.3 // indirect
 	github.com/segmentio/encoding v0.3.4 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect

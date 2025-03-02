@@ -1,0 +1,18 @@
+{
+  "projectGraph": {
+    "nodes": {},
+    "dependencies": {}
+  },
+  "workspaceLayout": {},
+  "projectFileMap": {},
+  "workspacePath": "/Users/nachovazquez/work/1-projects/naxodev/lazynx",
+  "nxJson": {},
+  "nxVersion": {
+    "full": "0.0.0",
+    "major": 0,
+    "minor": 0
+  },
+  "validWorkspaceJson": true,
+  "isLerna": false,
+  "isEncapsulatedNx": false
+}

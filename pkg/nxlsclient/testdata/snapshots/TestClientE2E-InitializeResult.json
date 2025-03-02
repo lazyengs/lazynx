@@ -1,0 +1,43 @@
+{
+  "capabilities": {
+    "workspace": {
+      "fileOperations": {
+        "didCreate": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/project.json",
+                "matches": "file"
+              }
+            }
+          ]
+        },
+        "didDelete": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/project.json",
+                "matches": "file"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "completionProvider": {
+      "triggerCharacters": [
+        "\"",
+        ":"
+      ],
+      "resolveProvider": false
+    },
+    "textDocumentSync": 2,
+    "documentLinkProvider": {
+      "resolveProvider": false,
+      "workDoneProgress": false
+    },
+    "definitionProvider": true,
+    "hoverProvider": true
+  },
+  "pid": 39015
+}
