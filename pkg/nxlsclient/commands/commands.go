@@ -26,14 +26,17 @@ func NewCommander(conn *jsonrpc2.Conn, logger *zap.SugaredLogger) *Commander {
 func (c *Commander) sendRequest(ctx context.Context, method string, params any, result any) error {
 	c.Logger.Debugw("Sending request", "method", method, "params", params)
 
-	if err := c.conn.Call(ctx, method, params, &result); err != nil {
-		c.Logger.Errorw("An error occurred while executing the request",
-			"method", method, "params", params,
-			"error", err.Error(),
-		)
+	// Check connection state before making the call
+	if c.conn == nil {
+		return fmt.Errorf("connection is nil")
+	}
+
+	if err := c.conn.Call(ctx, method, params, result); err != nil {
+		c.Logger.Warnw("Request failed", "method", method, "error", err)
 		return fmt.Errorf("an error occurred while executing the request: %w", err)
 	}
 
+	c.Logger.Debugw("Request successful", "method", method)
 	return nil
 }
 
@@ -41,13 +44,16 @@ func (c *Commander) sendRequest(ctx context.Context, method string, params any, 
 func (c *Commander) sendNotification(ctx context.Context, method string, params any) error {
 	c.Logger.Debugw("Sending notification", "method", method, "params", params)
 
+	// Check connection state before making the call
+	if c.conn == nil {
+		return fmt.Errorf("connection is nil")
+	}
+
 	if err := c.conn.Notify(ctx, method, params); err != nil {
-		c.Logger.Errorw("An error occurred while sending the notification",
-			"method", method, "params", params,
-			"error", err.Error(),
-		)
+		c.Logger.Warnw("Notification failed", "method", method, "error", err)
 		return fmt.Errorf("an error occurred while sending the notification: %w", err)
 	}
 
+	c.Logger.Debugw("Notification sent successfully", "method", method)
 	return nil
 }

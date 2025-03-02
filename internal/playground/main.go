@@ -109,7 +109,7 @@ func main() {
 
 		// Output some interesting details from the result
 		if result != nil {
-			if proj, ok := result.ProjectGraph.Nodes["pkg/nxlsclient"]; ok {
+			if proj, ok := result.ProjectGraph.Nodes["nxlsclient"]; ok {
 				logger.Infow("Package nxlsclient details", "data", proj)
 			}
 		}

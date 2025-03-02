@@ -12,10 +12,12 @@ const (
 func (c *Commander) SendStopNxDaemonRequest(ctx context.Context) error {
 	var result any
 
-	err := c.sendRequest(ctx, StopNxDaemonRequestMethod, nil, result)
+	c.Logger.Debug("Sending stop daemon request")
+	err := c.sendRequest(ctx, StopNxDaemonRequestMethod, nil, &result)
 	if err != nil {
 		return err
 	}
 
+	c.Logger.Debugw("Successfully stopped NX daemon via LSP")
 	return nil
 }

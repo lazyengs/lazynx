@@ -77,23 +77,23 @@ func TestClientE2E(t *testing.T) {
 	t.Run("InitializeResult", func(t *testing.T) {
 		// Make a deep copy of the init result to normalize the PID
 		initResultMap := make(map[string]interface{})
-		
+
 		// Convert to JSON and back to create a deep copy
 		jsonData, err := json.Marshal(initResult)
 		require.NoError(t, err, "Failed to marshal init result")
-		
+
 		err = json.Unmarshal(jsonData, &initResultMap)
 		require.NoError(t, err, "Failed to unmarshal init result")
-		
+
 		// Normalize the PID to a fixed value to ensure snapshot consistency
 		if pidValue, ok := initResultMap["pid"]; ok && pidValue != nil {
 			initResultMap["pid"] = 12345 // Use a fixed pid for snapshot comparisons
 		}
-		
+
 		// Snapshot the normalized initialization result
 		prettyJson, err := prettyPrintJSON(initResultMap)
 		require.NoError(t, err, "Failed to marshal init result to JSON")
-		
+
 		if updateSnapshots {
 			snapshotter.SnapshotT(t, prettyJson)
 			t.Log("Snapshot updated for InitializeResult")
@@ -118,7 +118,7 @@ func TestClientE2E(t *testing.T) {
 		// Snapshot the workspace result
 		prettyJson, err := prettyPrintJSON(result)
 		require.NoError(t, err, "Failed to marshal workspace result to JSON")
-		
+
 		if updateSnapshots {
 			snapshotter.SnapshotT(t, prettyJson)
 			t.Log("Snapshot updated for WorkspaceRequest")
@@ -136,7 +136,7 @@ func TestClientE2E(t *testing.T) {
 			// For this test, we allow errors since project graph might not be available in all environments
 			t.Logf("Project graph request error (this may be expected): %v", err)
 			snapshot := fmt.Sprintf("Error: %v", err)
-			
+
 			if updateSnapshots {
 				snapshotter.SnapshotT(t, snapshot)
 				t.Log("Snapshot updated for ProjectGraphRequest (error case)")
@@ -149,7 +149,7 @@ func TestClientE2E(t *testing.T) {
 		// Snapshot the project graph result
 		prettyJson, err := prettyPrintJSON(result)
 		require.NoError(t, err, "Failed to marshal project graph result to JSON")
-		
+
 		if updateSnapshots {
 			snapshotter.SnapshotT(t, prettyJson)
 			t.Log("Snapshot updated for ProjectGraphRequest")
@@ -168,7 +168,7 @@ func TestClientE2E(t *testing.T) {
 		// Snapshot the workspace serialized result
 		prettyJson, err := prettyPrintJSON(result)
 		require.NoError(t, err, "Failed to marshal workspace serialized result to JSON")
-		
+
 		if updateSnapshots {
 			snapshotter.SnapshotT(t, prettyJson)
 			t.Log("Snapshot updated for WorkspaceSerializedRequest")
@@ -186,7 +186,7 @@ func TestClientE2E(t *testing.T) {
 			// For this test, we allow errors since project might not be available in all environments
 			t.Logf("Project by path request error (this may be expected): %v", err)
 			snapshot := fmt.Sprintf("Error: %v", err)
-			
+
 			if updateSnapshots {
 				snapshotter.SnapshotT(t, snapshot)
 				t.Log("Snapshot updated for ProjectByPathRequest (error case)")
@@ -199,7 +199,7 @@ func TestClientE2E(t *testing.T) {
 		// Snapshot the project by path result
 		prettyJson, err := prettyPrintJSON(result)
 		require.NoError(t, err, "Failed to marshal project by path result to JSON")
-		
+
 		if updateSnapshots {
 			snapshotter.SnapshotT(t, prettyJson)
 			t.Log("Snapshot updated for ProjectByPathRequest")
@@ -241,7 +241,7 @@ func TestClientBasicFunctionality(t *testing.T) {
 		assert.Nil(t, client.Commander, "Commander should be nil")
 
 		ctx := context.Background()
-		
+
 		// This should not panic
 		client.Stop(ctx)
 	})
@@ -255,3 +255,4 @@ func prettyPrintJSON(v interface{}) (string, error) {
 	}
 	return string(bytes), nil
 }
+
