@@ -10,12 +10,13 @@ import (
 )
 
 type Client struct {
-	Logger          *zap.SugaredLogger
-	conn            *jsonrpc2.Conn
-	serverDir       string
-	NxWorkspacePath string
-	isVerbose       bool
-	Commander       *commands.Commander
+	Logger           *zap.SugaredLogger
+	conn             *jsonrpc2.Conn
+	serverDir        string
+	NxWorkspacePath  string
+	isVerbose        bool
+	Commander        *commands.Commander
+	NotifyListener   *NotificationListener
 }
 
 // NewClient creates a new Client struct instance with the given nxWorkspacePath and verbosity level.
@@ -32,6 +33,7 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 		Logger:          sugar,
 		NxWorkspacePath: nxWorkspacePath,
 		isVerbose:       verbose,
+		NotifyListener:  NewNotificationListener(),
 	}
 }
 
@@ -78,6 +80,11 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 func (c *Client) Stop(ctx context.Context) {
 	c.Logger.Debugw("Stopping client")
 
+	// Clear all notification handlers
+	if c.NotifyListener != nil {
+		c.NotifyListener.ClearHandlers()
+	}
+
 	err := c.stopNxls(ctx)
 	if err != nil {
 		c.Logger.Errorw("An error occurred while stopping nxls", "error", err.Error())
@@ -85,4 +92,14 @@ func (c *Client) Stop(ctx context.Context) {
 
 	c.Logger.Debugw("Clean up completed")
 	c.Logger.Sync()
+}
+
+// OnNotification registers a handler for a specific notification method.
+// Returns a Disposable that can be used to unregister the handler.
+func (c *Client) OnNotification(method string, handler NotificationHandler) *Disposable {
+	if c.NotifyListener == nil {
+		c.Logger.Warnw("Notification listener is nil, creating a new one")
+		c.NotifyListener = NewNotificationListener()
+	}
+	return c.NotifyListener.RegisterHandler(method, handler)
 }
