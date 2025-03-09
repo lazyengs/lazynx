@@ -3,16 +3,16 @@ package nxlsclient
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/lazyengs/pkg/nxlsclient/commands"
 )
 
 const (
 	// Notification method constants
-	MethodWindowLogMessage            = "window/logMessage"
-	MethodNxRefreshWorkspace          = "nx/refreshWorkspace"
-	MethodNxRefreshWorkspaceStarted   = "nx/refreshWorkspaceStarted"
-	MethodNxChangeWorkspace           = "nx/changeWorkspace"
-	
-	// Add other notification methods as needed
+	WindowLogMessageMethod          = "window/logMessage"
+	NxRefreshWorkspaceMethod        = commands.RefreshWorkspaceNotificationMethod
+	NxRefreshWorkspaceStartedMethod = commands.RefreshWorkspaceStartedNotificationMethod
+	NxChangeWorkspaceMethod         = commands.ChangeWorkspaceNotificationMethod
 )
 
 // WindowLogMessage represents a window/logMessage notification from the server
@@ -26,12 +26,12 @@ func ParseNotification[T any](params json.RawMessage) (*T, error) {
 	if params == nil {
 		return nil, fmt.Errorf("notification params are nil")
 	}
-	
+
 	var result T
 	if err := json.Unmarshal(params, &result); err != nil {
 		return nil, fmt.Errorf("failed to parse notification: %w", err)
 	}
-	
+
 	return &result, nil
 }
 
@@ -42,7 +42,7 @@ func TypedNotificationHandler[T any](handler func(method string, params *T) erro
 		if err != nil {
 			return err
 		}
-		
+
 		return handler(method, parsed)
 	}
 }

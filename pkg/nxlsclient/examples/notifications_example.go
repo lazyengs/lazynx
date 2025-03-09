@@ -21,17 +21,17 @@ func ExampleNotificationHandling() {
 	// 1. Basic notification handling
 	// Register a handler for refresh workspace started notification
 	refreshDisposable := client.OnNotification(
-		nxlsclient.MethodNxRefreshWorkspaceStarted,
+		commands.RefreshWorkspaceNotificationMethod,
 		func(method string, params json.RawMessage) error {
 			fmt.Println("Refresh workspace started!")
 			return nil
 		},
 	)
-	
+
 	// 2. Typed notification handling with generic helper
 	// Register a handler for window/logMessage with type checking
 	logDisposable := client.OnNotification(
-		nxlsclient.MethodWindowLogMessage,
+		nxlsclient.WindowLogMessageMethod,
 		nxlsclient.TypedNotificationHandler(
 			func(method string, params *nxlsclient.WindowLogMessage) error {
 				// Now we have a properly typed parameter
@@ -93,23 +93,23 @@ func ExampleMultipleNotifications() {
 	// Register a done channel to be notified when workspace refresh is complete
 	// This pattern is useful for synchronizing with asynchronous operations
 	refreshDone := make(chan struct{})
-	
+
 	// Track if we've seen the "started" notification
 	var refreshStarted bool
-	
+
 	// Handler for refresh started
 	client.OnNotification(
-		nxlsclient.MethodNxRefreshWorkspaceStarted,
+		commands.RefreshWorkspaceStartedNotificationMethod,
 		func(method string, params json.RawMessage) error {
 			fmt.Println("Refresh started...")
 			refreshStarted = true
 			return nil
 		},
 	)
-	
+
 	// Handler for refresh finished (regular notification)
 	client.OnNotification(
-		nxlsclient.MethodNxRefreshWorkspace,
+		commands.RefreshWorkspaceNotificationMethod,
 		func(method string, params json.RawMessage) error {
 			fmt.Println("Refresh completed!")
 			// Only signal completion if we saw the start notification
@@ -119,10 +119,10 @@ func ExampleMultipleNotifications() {
 			return nil
 		},
 	)
-	
+
 	// Start client...
 	// trigger refresh...
-	
+
 	// Wait for refresh to complete with timeout
 	select {
 	case <-refreshDone:
@@ -130,9 +130,9 @@ func ExampleMultipleNotifications() {
 	case <-time.After(30 * time.Second):
 		fmt.Println("Timed out waiting for workspace refresh")
 	}
-	
+
 	// Use client...
-	
+
 	// Cleanup
 	client.Stop(context.Background())
 }

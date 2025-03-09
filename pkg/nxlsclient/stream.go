@@ -42,11 +42,11 @@ func (c *Client) handleServerRequest(ctx context.Context, conn *jsonrpc2.Conn, r
 		}
 
 		// Check if we have handlers for this notification method
-		if c.NotifyListener != nil && c.NotifyListener.HasHandlers(req.Method) {
+		if c.notificationListener != nil && c.notificationListener.hasHandlers(req.Method) {
 			// Process asynchronously to avoid blocking the JSONRPC handler
 			go func(method string, params json.RawMessage) {
 				c.Logger.Debugw("Notifying handlers", "method", method)
-				c.NotifyListener.NotifyAll(method, params)
+				c.notificationListener.notifyAll(method, params)
 			}(req.Method, *req.Params)
 		}
 

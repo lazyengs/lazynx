@@ -10,13 +10,13 @@ import (
 )
 
 type Client struct {
-	Logger           *zap.SugaredLogger
-	conn             *jsonrpc2.Conn
-	serverDir        string
-	NxWorkspacePath  string
-	isVerbose        bool
-	Commander        *commands.Commander
-	NotifyListener   *NotificationListener
+	Logger               *zap.SugaredLogger
+	conn                 *jsonrpc2.Conn
+	serverDir            string
+	NxWorkspacePath      string
+	isVerbose            bool
+	Commander            *commands.Commander
+	notificationListener *notificationListener
 }
 
 // NewClient creates a new Client struct instance with the given nxWorkspacePath and verbosity level.
@@ -30,10 +30,10 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 	sugar.Debugw("Creating new client")
 
 	return &Client{
-		Logger:          sugar,
-		NxWorkspacePath: nxWorkspacePath,
-		isVerbose:       verbose,
-		NotifyListener:  NewNotificationListener(),
+		Logger:               sugar,
+		NxWorkspacePath:      nxWorkspacePath,
+		isVerbose:            verbose,
+		notificationListener: newNotificationListener(),
 	}
 }
 
@@ -81,8 +81,8 @@ func (c *Client) Stop(ctx context.Context) {
 	c.Logger.Debugw("Stopping client")
 
 	// Clear all notification handlers
-	if c.NotifyListener != nil {
-		c.NotifyListener.ClearHandlers()
+	if c.notificationListener != nil {
+		c.notificationListener.clearHandlers()
 	}
 
 	err := c.stopNxls(ctx)
@@ -97,9 +97,9 @@ func (c *Client) Stop(ctx context.Context) {
 // OnNotification registers a handler for a specific notification method.
 // Returns a Disposable that can be used to unregister the handler.
 func (c *Client) OnNotification(method string, handler NotificationHandler) *Disposable {
-	if c.NotifyListener == nil {
+	if c.notificationListener == nil {
 		c.Logger.Warnw("Notification listener is nil, creating a new one")
-		c.NotifyListener = NewNotificationListener()
+		c.notificationListener = newNotificationListener()
 	}
-	return c.NotifyListener.RegisterHandler(method, handler)
+	return c.notificationListener.registerHandler(method, handler)
 }

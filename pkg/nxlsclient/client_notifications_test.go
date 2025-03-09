@@ -1,4 +1,4 @@
-package nxlsclient_test
+package nxlsclient
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lazyengs/pkg/nxlsclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +19,7 @@ func TestNotificationHandling(t *testing.T) {
 	}
 
 	// Create a new client
-	client := nxlsclient.NewClient("/test/path", true)
+	client := NewClient("/test/path", true)
 	require.NotNil(t, client, "Client should not be nil")
 
 	// Test registering notification handlers
@@ -32,9 +31,9 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Use the typed notification handler helper
 		disposable := client.OnNotification(
-			nxlsclient.MethodWindowLogMessage,
-			nxlsclient.TypedNotificationHandler(
-				func(method string, params *nxlsclient.WindowLogMessage) error {
+			WindowLogMessageMethod,
+			TypedNotificationHandler(
+				func(method string, params *WindowLogMessage) error {
 					receivedMessage = params.Message
 					wg.Done()
 					return nil
@@ -44,7 +43,8 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Manually trigger the notification
 		params := json.RawMessage(`{"message": "Test message", "type": 1}`)
-		client.NotifyListener.NotifyAll(nxlsclient.MethodWindowLogMessage, params)
+		client.notificationListener = newNotificationListener()
+		client.notificationListener.notifyAll(WindowLogMessageMethod, params)
 
 		// Wait for the notification to be processed
 		waitDone := make(chan struct{})
@@ -69,7 +69,7 @@ func TestNotificationHandling(t *testing.T) {
 		// Reset and try again, should not be called
 		receivedMessage = ""
 		wg.Add(1)
-		client.NotifyListener.NotifyAll(nxlsclient.MethodWindowLogMessage, params)
+		client.notificationListener.notifyAll(WindowLogMessageMethod, params)
 
 		// Since we unregistered, the handler should not be called
 		timeoutCh := time.After(500 * time.Millisecond)
@@ -86,7 +86,7 @@ func TestNotificationHandling(t *testing.T) {
 			// This is expected - the handler wasn't called
 			wg.Done() // Prevent WaitGroup deadlock
 		}
-		
+
 		assert.Empty(t, receivedMessage, "Message should not have been updated after unregistering handler")
 	})
 
@@ -96,14 +96,14 @@ func TestNotificationHandling(t *testing.T) {
 		var mu sync.Mutex
 
 		// Register two handlers for the same method
-		disposable1 := client.OnNotification(nxlsclient.MethodNxRefreshWorkspace, func(method string, params json.RawMessage) error {
+		disposable1 := client.OnNotification(NxRefreshWorkspaceMethod, func(method string, params json.RawMessage) error {
 			mu.Lock()
 			defer mu.Unlock()
 			count1++
 			return nil
 		})
 
-		disposable2 := client.OnNotification(nxlsclient.MethodNxRefreshWorkspace, func(method string, params json.RawMessage) error {
+		disposable2 := client.OnNotification(NxRefreshWorkspaceMethod, func(method string, params json.RawMessage) error {
 			mu.Lock()
 			defer mu.Unlock()
 			count2++
@@ -112,7 +112,7 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Manually trigger the notification
 		params := json.RawMessage(`{}`) // empty params
-		client.NotifyListener.NotifyAll(nxlsclient.MethodNxRefreshWorkspace, params)
+		client.notificationListener.notifyAll(NxRefreshWorkspaceMethod, params)
 
 		// Short sleep to allow the async handlers to execute
 		time.Sleep(100 * time.Millisecond)
@@ -124,7 +124,7 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Unregister one handler and try again
 		disposable1.Dispose()
-		client.NotifyListener.NotifyAll(nxlsclient.MethodNxRefreshWorkspace, params)
+		client.notificationListener.notifyAll(NxRefreshWorkspaceMethod, params)
 
 		// Short sleep to allow the async handlers to execute
 		time.Sleep(100 * time.Millisecond)
@@ -148,7 +148,7 @@ func TestNotificationHandling(t *testing.T) {
 		})
 
 		// Verify the handler is registered
-		assert.True(t, client.NotifyListener.HasHandlers("test/method"))
+		assert.True(t, client.notificationListener.hasHandlers("test/method"))
 		assert.NotNil(t, disposable)
 
 		// Stop the client
@@ -156,16 +156,16 @@ func TestNotificationHandling(t *testing.T) {
 		client.Stop(ctx)
 
 		// Verify all handlers were cleared
-		assert.False(t, client.NotifyListener.HasHandlers("test/method"))
-		
+		assert.False(t, client.notificationListener.hasHandlers("test/method"))
+
 		// Manually trigger the notification (should not call the handler)
 		handlerCalled = false
 		params := json.RawMessage(`{}`)
-		client.NotifyListener.NotifyAll("test/method", params)
-		
+		client.notificationListener.notifyAll("test/method", params)
+
 		// Verify the handler was not called
 		assert.False(t, handlerCalled)
-		
+
 		// Disposing after client stop should be safe
 		disposable.Dispose()
 	})
@@ -178,7 +178,7 @@ func TestE2ENotifications(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping E2E notification test in short mode")
 	}
-	
+
 	// Always skip this test as it's just an example
 	t.Skip("This is an example test that requires a real NX workspace")
 }

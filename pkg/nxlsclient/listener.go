@@ -20,7 +20,7 @@ type handlerEntry struct {
 type Disposable struct {
 	id       uint64
 	method   string
-	listener *NotificationListener
+	listener *notificationListener
 }
 
 // Dispose unregisters the handler associated with this disposable.
@@ -31,7 +31,7 @@ func (d *Disposable) Dispose() {
 }
 
 // NotificationListener manages notification handlers for different notification methods.
-type NotificationListener struct {
+type notificationListener struct {
 	mu        sync.RWMutex
 	handlers  map[string][]handlerEntry
 	nextID    uint64
@@ -39,15 +39,15 @@ type NotificationListener struct {
 }
 
 // NewNotificationListener creates a new NotificationListener instance.
-func NewNotificationListener() *NotificationListener {
-	return &NotificationListener{
+func newNotificationListener() *notificationListener {
+	return &notificationListener{
 		handlers: make(map[string][]handlerEntry),
 	}
 }
 
 // RegisterHandler registers a handler for a specific notification method.
 // Returns a Disposable that can be used to unregister the handler.
-func (l *NotificationListener) RegisterHandler(method string, handler NotificationHandler) *Disposable {
+func (l *notificationListener) registerHandler(method string, handler NotificationHandler) *Disposable {
 	if handler == nil {
 		return &Disposable{listener: nil}
 	}
@@ -76,7 +76,7 @@ func (l *NotificationListener) RegisterHandler(method string, handler Notificati
 }
 
 // unregisterHandlerByID removes a handler with the specified ID for a method.
-func (l *NotificationListener) unregisterHandlerByID(method string, id uint64) {
+func (l *notificationListener) unregisterHandlerByID(method string, id uint64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -101,7 +101,7 @@ func (l *NotificationListener) unregisterHandlerByID(method string, id uint64) {
 }
 
 // NotifyAll calls all registered handlers for a specific notification method.
-func (l *NotificationListener) NotifyAll(method string, params json.RawMessage) {
+func (l *notificationListener) notifyAll(method string, params json.RawMessage) {
 	l.mu.RLock()
 	entries, ok := l.handlers[method]
 	l.mu.RUnlock()
@@ -122,18 +122,19 @@ func (l *NotificationListener) NotifyAll(method string, params json.RawMessage) 
 }
 
 // ClearHandlers removes all handlers for all methods.
-func (l *NotificationListener) ClearHandlers() {
+func (l *notificationListener) clearHandlers() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	
+
 	l.handlers = make(map[string][]handlerEntry)
 }
 
 // HasHandlers checks if there are any handlers registered for a specific method.
-func (l *NotificationListener) HasHandlers(method string) bool {
+func (l *notificationListener) hasHandlers(method string) bool {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
-	
+
 	handlers, ok := l.handlers[method]
 	return ok && len(handlers) > 0
 }
+
