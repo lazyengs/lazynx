@@ -21,7 +21,7 @@ func ExampleNotificationHandling() {
 	// 1. Basic notification handling
 	// Register a handler for refresh workspace started notification
 	refreshDisposable := client.OnNotification(
-		commands.RefreshWorkspaceNotificationMethod,
+		nxlsclient.NxRefreshWorkspaceMethod,
 		func(method string, params json.RawMessage) error {
 			fmt.Println("Refresh workspace started!")
 			return nil
@@ -109,7 +109,7 @@ func ExampleMultipleNotifications() {
 
 	// Handler for refresh finished (regular notification)
 	client.OnNotification(
-		commands.RefreshWorkspaceNotificationMethod,
+		nxlsclient.NxRefreshWorkspaceMethod,
 		func(method string, params json.RawMessage) error {
 			fmt.Println("Refresh completed!")
 			// Only signal completion if we saw the start notification
