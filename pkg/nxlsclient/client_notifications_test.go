@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sourcegraph/jsonrpc2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -43,8 +44,13 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Manually trigger the notification
 		params := json.RawMessage(`{"message": "Test message", "type": 1}`)
-		client.notificationListener = newNotificationListener()
-		client.notificationListener.notifyAll(WindowLogMessageMethod, params)
+		// Use handleServerRequest directly to simulate receiving a notification
+		req := &jsonrpc2.Request{
+			Method: WindowLogMessageMethod,
+			Params: &params,
+			Notif:  true,
+		}
+		client.handleServerRequest(context.Background(), nil, req)
 
 		// Wait for the notification to be processed
 		waitDone := make(chan struct{})
@@ -69,7 +75,13 @@ func TestNotificationHandling(t *testing.T) {
 		// Reset and try again, should not be called
 		receivedMessage = ""
 		wg.Add(1)
-		client.notificationListener.notifyAll(WindowLogMessageMethod, params)
+		// Use handleServerRequest directly to simulate receiving a notification
+		req = &jsonrpc2.Request{
+			Method: WindowLogMessageMethod,
+			Params: &params,
+			Notif:  true,
+		}
+		client.handleServerRequest(context.Background(), nil, req)
 
 		// Since we unregistered, the handler should not be called
 		timeoutCh := time.After(500 * time.Millisecond)
@@ -112,7 +124,13 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Manually trigger the notification
 		params := json.RawMessage(`{}`) // empty params
-		client.notificationListener.notifyAll(NxRefreshWorkspaceMethod, params)
+		// Use handleServerRequest directly to simulate receiving a notification
+		req := &jsonrpc2.Request{
+			Method: NxRefreshWorkspaceMethod,
+			Params: &params,
+			Notif:  true,
+		}
+		client.handleServerRequest(context.Background(), nil, req)
 
 		// Short sleep to allow the async handlers to execute
 		time.Sleep(100 * time.Millisecond)
@@ -124,7 +142,13 @@ func TestNotificationHandling(t *testing.T) {
 
 		// Unregister one handler and try again
 		disposable1.Dispose()
-		client.notificationListener.notifyAll(NxRefreshWorkspaceMethod, params)
+		// Use handleServerRequest directly to simulate receiving a notification
+		req = &jsonrpc2.Request{
+			Method: NxRefreshWorkspaceMethod,
+			Params: &params,
+			Notif:  true,
+		}
+		client.handleServerRequest(context.Background(), nil, req)
 
 		// Short sleep to allow the async handlers to execute
 		time.Sleep(100 * time.Millisecond)
@@ -161,7 +185,13 @@ func TestNotificationHandling(t *testing.T) {
 		// Manually trigger the notification (should not call the handler)
 		handlerCalled = false
 		params := json.RawMessage(`{}`)
-		client.notificationListener.notifyAll("test/method", params)
+		// Use handleServerRequest directly to simulate receiving a notification
+		req := &jsonrpc2.Request{
+			Method: "test/method",
+			Params: &params,
+			Notif:  true,
+		}
+		client.handleServerRequest(context.Background(), nil, req)
 
 		// Verify the handler was not called
 		assert.False(t, handlerCalled)
