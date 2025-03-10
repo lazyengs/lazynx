@@ -44,7 +44,7 @@ Creating a client and initializing the LSP connection:
 
 	// Wait for initialization
 	init := <-ch
-	
+
 	// When done
 	client.Stop(ctx)
 
@@ -56,7 +56,7 @@ After initialization, you can use the Commander to interact with the Nx workspac
 	workspace, err := client.Commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
 		Reset: false,
 	})
-	
+
 	// Get project graph
 	projectGraph, err := client.Commander.SendCreateProjectGraphRequest(ctx, commands.CreateProjectGraphParams{
 		ShowAffected: false,
@@ -95,6 +95,6 @@ The client supports event-based programming through LSP notifications:
 
   - commands: Contains all LSP command implementations
   - nx-types: Contains Nx-specific type definitions
-
 */
 package nxlsclient
+
