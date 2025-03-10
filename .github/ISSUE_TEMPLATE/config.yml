@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/lazyengs/lazynx/discussions
+    about: Please ask and answer questions here.
+  - name: Documentation
+    url: https://github.com/lazyengs/lazynx/blob/main/pkg/nxlsclient/README.md
+    about: Check out the package documentation first.
+  - name: Nx Console Documentation
+    url: https://github.com/nrwl/nx-console
+    about: Learn more about the Nx Console project which this client interacts with.
