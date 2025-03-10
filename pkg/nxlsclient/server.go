@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"context"
 	"embed"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"syscall"
 )
 
 //go:embed server/nxls
@@ -20,16 +20,13 @@ var serverfs embed.FS
 func (c *Client) unpackServer() error {
 	tempDir, err := os.MkdirTemp("", "nxls-server")
 	if err != nil {
-		c.Logger.Errorf("Failed to create temp directory: %s", err.Error())
-		return errors.New("Failed to create the temp directory")
+		return fmt.Errorf("failed to create the temp directory: %w", err)
 	}
 	c.Logger.Debugw("Created temporary directory", "tempDir", tempDir)
 
 	err = os.CopyFS(tempDir, serverfs)
 	if err != nil {
-		c.Logger.Errorf("Failed to copy the server to the temp directory: %s", err.Error())
-		return errors.New("Failed to copy the server to the temp directory")
-
+		return fmt.Errorf("failed to copy the server to the temp directory: %w", err)
 	}
 	c.serverDir = path.Join(tempDir, "server", "nxls")
 
@@ -60,19 +57,16 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		c.Logger.Fatalf("Failed to get stdout pipe: %s", err.Error())
-		return errors.New("Failed to get stdout pipe")
+		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		c.Logger.Errorf("Failed to get stderr pipe: %s", err.Error())
-		return errors.New("Failed to get stderr pipe")
+		return fmt.Errorf("failed to get stderr pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		c.Logger.Errorf("Failed to start command: %s", err.Error())
-		return errors.New("Failed to start command")
+		return fmt.Errorf("failed to start command: %w", err)
 	}
 
 	if c.isVerbose {
@@ -85,8 +79,7 @@ func (c *Client) runOSCommandInServerFolder(ctx context.Context, name string, ar
 	}
 
 	if err := cmd.Wait(); err != nil {
-		c.Logger.Errorf("Failed to run the command %s: %s", name, err.Error())
-		return errors.New("Failed to run the command")
+		return fmt.Errorf("failed to run the command: %w", err)
 	}
 
 	return nil
@@ -101,20 +94,22 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 	cmd := exec.CommandContext(ctx, "node", serverPath, "--stdio")
 	cmd.Dir = c.NxWorkspacePath
 
+	// Set up process group isolation (prevents signal propagation)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true, // Put the child in its own process group
+	}
+
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		c.Logger.Fatalf("failed to create stdin pipe: %s", err.Error())
-		return nil, errors.New("Failed to get stdin pipe")
+		return nil, fmt.Errorf("failed to get stdin pipe: %w", err)
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		c.Logger.Fatalf("Failed to get stdout pipe: %s", err.Error())
-		return nil, errors.New("Failed to get stdout pipe")
+		return nil, fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		c.Logger.Errorf("Failed to start command: %s", err.Error())
-		return nil, errors.New("Failed to run the start command")
+		return nil, fmt.Errorf("failed to run the start command: %w", err)
 	}
 
 	rwc = &ReadWriteCloser{
@@ -133,23 +128,142 @@ func (c *Client) startNxls(ctx context.Context) (rwc *ReadWriteCloser, err error
 }
 
 func (c *Client) stopNxls(ctx context.Context) error {
-	c.Logger.Debugw("Stopping nxls")
+	// Log the start of the stopping process
+	c.Logger.Infow("Stopping nxls server and NX daemon")
 
-	c.conn.Call(ctx, "shutdown", nil, nil)
-	c.conn.Notify(ctx, "exit", nil)
+	var daemonStoppedWithLSP bool
+
+	// Try LSP commands to stop everything gracefully if Commander is available
+	if c.Commander != nil && c.conn != nil {
+		c.Logger.Debugw("Attempting to stop NX daemon via LSP protocol")
+
+		// Try to stop the NX daemon via LSP protocol
+		err := c.Commander.SendStopNxDaemonRequest(ctx)
+		if err != nil {
+			c.Logger.Warnw("Failed to stop NX daemon via LSP", "error", err.Error())
+		} else {
+			c.Logger.Infow("Successfully stopped NX daemon via LSP")
+			daemonStoppedWithLSP = true
+		}
+
+		c.Logger.Debugw("Sending LSP shutdown request")
+		err = c.Commander.SendShutdownRequest(ctx)
+		if err != nil {
+			c.Logger.Warnw("Failed to send LSP shutdown request", "error", err.Error())
+		}
+
+		c.Logger.Debugw("Sending LSP exit notification")
+		err = c.Commander.SendExitNotification(ctx)
+		if err != nil {
+			c.Logger.Warnw("Failed to send LSP exit notification", "error", err.Error())
+		}
+	} else {
+		// Log why we're skipping LSP commands
+		if c.Commander == nil {
+			c.Logger.Warnw("Commander is nil, skipping LSP requests")
+		}
+		if c.conn == nil {
+			c.Logger.Warnw("Connection is nil, skipping LSP requests")
+		}
+	}
+
+	// If we couldn't stop the daemon with LSP, try with npx
+	if !daemonStoppedWithLSP {
+		c.Logger.Infow("Falling back to npx to stop NX daemon")
+		err := c.killDaemonWithNpx(ctx)
+		if err != nil {
+			c.Logger.Errorw("Failed to stop NX daemon with npx", "error", err.Error())
+		} else {
+			c.Logger.Infow("Successfully stopped NX daemon with npx")
+		}
+	}
+
+	// Cleanup actions regardless of daemon stop success
+
+	// Clean up the server folder
+	c.Logger.Debugw("Cleaning up server folder")
+	err := c.cleanUpServerFolder()
+	if err != nil {
+		c.Logger.Errorw("Failed to clean up server folder", "error", err.Error())
+		return fmt.Errorf("failed to clean up server folder: %w", err)
+	}
+
+	// Close the connection if it exists, always as the last step
+	if c.conn != nil {
+		c.Logger.Debugw("Closing LSP connection")
+		c.conn.Close()
+		c.conn = nil // Set to nil to prevent double-closing
+	}
+
+	// Final cleanup status
+	if daemonStoppedWithLSP {
+		c.Logger.Infow("Cleanup completed successfully (daemon stopped via LSP)")
+	} else {
+		c.Logger.Infow("Cleanup completed successfully (daemon stopped via npx)")
+	}
+	return nil
+}
+
+func (c *Client) killDaemonWithNpx(ctx context.Context) error {
+	c.Logger.Debugw("Attempting to stop NX daemon using npx")
 
 	cmd := exec.CommandContext(ctx, "npx", "nx", "daemon", "--stop")
 	cmd.Dir = c.NxWorkspacePath
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to stop nx daemon: %s", err.Error())
+	// Get stdout and stderr to log the output
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 
-	if c.conn != nil {
-		c.conn.Close()
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stderr pipe: %w", err)
 	}
 
-	c.Logger.Debugw("Cleanup process completed")
+	// Start the command
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start npx nx daemon --stop: %w", err)
+	}
 
+	// Read output for logging
+	go func() {
+		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
+		for scanner.Scan() {
+			c.Logger.Debugw("NX daemon stop output", "message", scanner.Text())
+		}
+	}()
+
+	// Wait for command to complete
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("failed to stop nx daemon with npx: %w", err)
+	}
+
+	c.Logger.Debugw("Successfully stopped NX daemon using npx")
+	return nil
+}
+
+// cleanUpServerFolder removes the temporary server directory.
+func (c *Client) cleanUpServerFolder() error {
+	// Skip if serverDir is empty
+	if c.serverDir == "" {
+		c.Logger.Debugw("Server directory not set, skipping cleanup")
+		return nil
+	}
+
+	// Check if directory exists before attempting to remove
+	_, err := os.Stat(c.serverDir)
+	if os.IsNotExist(err) {
+		c.Logger.Debugw("Server directory doesn't exist, skipping cleanup", "serverDir", c.serverDir)
+		return nil
+	}
+
+	// Remove the directory
+	err = os.RemoveAll(c.serverDir)
+	if err != nil {
+		return fmt.Errorf("failed to remove the server directory: %w", err)
+	}
+
+	c.Logger.Debugw("Server directory removed", "serverDir", c.serverDir)
 	return nil
 }
