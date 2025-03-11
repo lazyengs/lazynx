@@ -53,7 +53,7 @@ lazynx/
 2. Install dependencies
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. Run tests
