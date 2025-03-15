@@ -3,16 +3,17 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "pkg/nxlsclient",
-  "tags": [
-    "technology:go",
-    "type:library"
-  ],
+  "tags": ["technology:go", "type:library"],
   "targets": {
     "test": {
       "executor": "@nx-go/nx-go:test"
     },
     "lint": {
-      "executor": "@nx-go/nx-go:lint"
+      "executor": "@nx-go/nx-go:lint",
+      "options": {
+        "linter": "golangci-lint",
+        "args": ["run"]
+      }
     },
     "tidy": {
       "executor": "@nx-go/nx-go:tidy"

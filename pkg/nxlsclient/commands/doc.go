@@ -24,11 +24,11 @@ Commands are typically used through the Commander instance provided by the nxlsc
 	workspace, err := client.Commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
 		Reset: false,
 	})
-	
+
 	if err != nil {
 		// Handle error
 	}
-	
+
 	fmt.Printf("Nx version: %s\n", workspace.NxVersion)
 
 # Available Commands
@@ -50,7 +50,7 @@ You can create a custom Commander instance with the NewCommander function:
 	conn := // your jsonrpc2.Conn instance
 	logger := // your zap.SugaredLogger instance
 	commander := commands.NewCommander(conn, logger)
-	
+
 	// Now use the commander to send requests
 	result, err := commander.SendWorkspaceRequest(ctx, params)
 
@@ -69,6 +69,5 @@ All command methods return errors that should be handled by the caller:
 			// Handle other errors
 		}
 	}
-
 */
 package commands

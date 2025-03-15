@@ -33,16 +33,6 @@ func (c *Client) unpackServer() error {
 	return nil
 }
 
-// runSystemReport runs a system report by executing node commands in the server folder.
-func (c *Client) runSystemReport(ctx context.Context) error {
-	c.Logger.Debugw("System Report:", "serverDir", c.serverDir)
-	err := c.runOSCommandInServerFolder(ctx, "node", "-v")
-	if err != nil {
-		return err
-	}
-	return c.runOSCommandInServerFolder(ctx, "node", "-p", "process.arch")
-}
-
 // installDependencies installs npm dependencies in the server folder.
 func (c *Client) installDependencies(ctx context.Context) error {
 	c.Logger.Debugw("Installing dependencies at ", "serverDir", c.serverDir)
