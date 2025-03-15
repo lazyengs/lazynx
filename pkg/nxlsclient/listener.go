@@ -34,7 +34,6 @@ func (d *Disposable) Dispose() {
 type notificationListener struct {
 	mu        sync.RWMutex
 	handlers  map[string][]handlerEntry
-	nextID    uint64
 	idCounter atomic.Uint64
 }
 
@@ -137,4 +136,3 @@ func (l *notificationListener) hasHandlers(method string) bool {
 	handlers, ok := l.handlers[method]
 	return ok && len(handlers) > 0
 }
-

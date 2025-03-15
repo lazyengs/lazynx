@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -16,7 +17,6 @@ import (
 func main() {
 	_logger, _ := zap.NewDevelopment()
 	logger := _logger.Sugar()
-	defer logger.Sync()
 
 	logger.Infow("Starting Nx client playground")
 
@@ -77,7 +77,11 @@ func main() {
 		signal.Stop(signalChan)
 
 		// Ensure clean exit
-		logger.Sync()
+		err := logger.Sync()
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		os.Exit(0)
 	}()
 

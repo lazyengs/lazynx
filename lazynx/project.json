@@ -21,7 +21,11 @@
       "executor": "@nx-go/nx-go:test"
     },
     "lint": {
-      "executor": "@nx-go/nx-go:lint"
+      "executor": "@nx-go/nx-go:lint",
+      "options": {
+        "linter": "golangci-lint",
+        "args": ["run"]
+      }
     },
     "tidy": {
       "executor": "@nx-go/nx-go:tidy"

@@ -1,0 +1,51 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  go: "1.24"
+  tests: false
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - gosec
+    - misspell
+    - revive
+    - gocyclo
+    - dupl
+    - goconst
+    - nolintlint
+    - unconvert
+    - whitespace
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  gosec:
+    excludes:
+      - G204 # Subprocess launched with a potential tainted input or cmd arguments
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - disableStutteringCheck
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - dupl
+  max-issues-per-linter: 0
+  max-same-issues: 0

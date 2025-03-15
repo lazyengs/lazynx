@@ -24,7 +24,6 @@ func (m ModelC) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "t", " ", "enter":
 			m.status = !m.status
 		}
-
 	}
 
 	return m, nil
