@@ -22,6 +22,6 @@ type ProjectFolderTreeResult struct {
 // SendProjectFolderTreeRequest sends a request to get the project folder tree.
 func (c *Commander) SendProjectFolderTreeRequest(ctx context.Context) (*ProjectFolderTreeResult, error) {
 	var result *ProjectFolderTreeResult
-	err := c.sendRequest(ctx, ProjectFolderTreeRequestMethod, nil, &result)
+	err := c.sendRequest(ctx, ProjectFolderTreeRequestMethod, []string{}, &result)
 	return result, err
 }
