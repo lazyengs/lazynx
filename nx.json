@@ -12,7 +12,7 @@
   "release": {
     "projectsRelationship": "independent",
     "projects": ["pkg/nxlsclient", "lazynx"],
-    "releaseTagPattern": "{projectName}-v{version}",
+    "releaseTagPattern": "{projectName}@{version}",
     "changelog": {
       "projectChangelogs": true,
       "workspaceChangelog": false,
