@@ -59,7 +59,7 @@ jobs:
         if: ${{ steps.release-nxlsclient.outcome == 'success' }}
         run: |
           # Running go list will cause the module to be indexed on pkg.go.dev
-          go list -m github.com/lazyengs/lazynx/pkg/nxlsclient@$(git describe --tags --match="nxlsclient-v*" --abbrev=0)
+          go list -m github.com/lazyengs/lazynx/pkg/nxlsclient@$(git describe --tags --match="nxlsclient@*" --abbrev=0)
 
           # For verification, run one more time with verbose output
-          GOPROXY=proxy.golang.org go list -m -json github.com/lazyengs/lazynx/pkg/nxlsclient@$(git describe --tags --match="nxlsclient-v*" --abbrev=0)
+          GOPROXY=proxy.golang.org go list -m -json github.com/lazyengs/lazynx/pkg/nxlsclient@$(git describe --tags --match="nxlsclient@*" --abbrev=0)
