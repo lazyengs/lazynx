@@ -1,4 +1,4 @@
-module github.com/lazyengs/pkg/nxlsclient
+module github.com/lazyengs/lazynx/pkg/nxlsclient
 
 go 1.24
 

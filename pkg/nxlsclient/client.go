@@ -3,7 +3,7 @@ package nxlsclient
 import (
 	"context"
 
-	"github.com/lazyengs/pkg/nxlsclient/commands"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"github.com/sourcegraph/jsonrpc2"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
