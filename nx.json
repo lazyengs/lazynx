@@ -8,5 +8,18 @@
       "{workspaceRoot}/.github/workflows/ci.yml"
     ]
   },
-  "plugins": ["@nx-go/nx-go"]
+  "plugins": ["@nx-go/nx-go"],
+  "release": {
+    "projectsRelationship": "independent",
+    "projects": ["pkg/nxlsclient", "lazynx"],
+    "releaseTagPattern": "{projectName}-v{version}",
+    "changelog": {
+      "projectChangelogs": true,
+      "workspaceChangelog": false,
+      "commitMessageFormat": "conventional"
+    },
+    "version": {
+      "conventionalCommits": true
+    }
+  }
 }
