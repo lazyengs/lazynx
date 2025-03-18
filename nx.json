@@ -8,21 +8,7 @@
       "{workspaceRoot}/.github/workflows/ci.yml"
     ]
   },
-  "plugins": [
-    "@nx-go/nx-go",
-    {
-      "plugin": "@nx/js/typescript",
-      "options": {
-        "typecheck": {
-          "targetName": "typecheck"
-        },
-        "build": {
-          "targetName": "build",
-          "configName": "tsconfig.lib.json"
-        }
-      }
-    }
-  ],
+  "plugins": ["@nx-go/nx-go"],
   "release": {
     "projectsRelationship": "independent",
     "projects": ["nxlsclient", "lazynx"],
