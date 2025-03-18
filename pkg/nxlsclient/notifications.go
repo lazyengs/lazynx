@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/lazyengs/pkg/nxlsclient/commands"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 )
 
 const (

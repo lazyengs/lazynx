@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lazyengs/pkg/nxlsclient"
-	"github.com/lazyengs/pkg/nxlsclient/commands"
-	nxtypes "github.com/lazyengs/pkg/nxlsclient/nx-types"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
+	nxtypes "github.com/lazyengs/lazynx/pkg/nxlsclient/nx-types"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )

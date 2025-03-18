@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/lazyengs/pkg/nxlsclient"
-	"github.com/lazyengs/pkg/nxlsclient/commands"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )

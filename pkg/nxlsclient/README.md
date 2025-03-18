@@ -2,7 +2,7 @@
 
 A Go client library for the Nx Language Server Protocol (LSP) server.
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/lazyengs/pkg/nxlsclient.svg)](https://pkg.go.dev/github.com/lazyengs/pkg/nxlsclient)
+[![Go Reference](https://pkg.go.dev/badge/github.com/lazyengs/lazynx/pkg/nxlsclient.svg)](https://pkg.go.dev/github.com/lazyengs/lazynx/pkg/nxlsclient)
 
 ## Overview
 
@@ -27,7 +27,7 @@ This library is designed to work seamlessly with Nx workspace monorepos and inte
 ## Installation
 
 ```bash
-go get github.com/lazyengs/pkg/nxlsclient
+go get github.com/lazyengs/lazynx/pkg/nxlsclient
 ```
 
 ## Quick Start
@@ -43,8 +43,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/lazyengs/pkg/nxlsclient"
-	"github.com/lazyengs/pkg/nxlsclient/commands"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )
