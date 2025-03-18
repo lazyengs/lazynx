@@ -8,13 +8,29 @@
       "{workspaceRoot}/.github/workflows/ci.yml"
     ]
   },
-  "plugins": ["@nx-go/nx-go"],
+  "plugins": [
+    "@nx-go/nx-go",
+    {
+      "plugin": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": {
+          "targetName": "build",
+          "configName": "tsconfig.lib.json"
+        }
+      }
+    }
+  ],
   "release": {
     "projectsRelationship": "independent",
-    "projects": ["pkg/nxlsclient", "lazynx"],
+    "projects": ["nxlsclient", "lazynx"],
     "releaseTagPattern": "{projectName}@{version}",
     "changelog": {
-      "projectChangelogs": true,
+      "projectChangelogs": {
+        "createRelease": "github"
+      },
       "workspaceChangelog": false,
       "commitMessageFormat": "conventional"
     },

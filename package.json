@@ -8,7 +8,11 @@
     "@nx-go/nx-go": "3.2.0"
   },
   "devDependencies": {
+    "@nx/js": "20.0.12",
     "@nx/workspace": "20.0.12",
+    "@swc-node/register": "~1.9.1",
+    "@swc/core": "~1.5.7",
+    "@swc/helpers": "~0.5.11",
     "nx": "20.0.12"
   }
 }
