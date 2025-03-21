@@ -21,7 +21,10 @@
       "commitMessageFormat": "conventional"
     },
     "version": {
-      "conventionalCommits": true
+      "conventionalCommits": true,
+      "generatorOptions": {
+        "currentVersionResolver": "git-tag"
+      }
     }
   }
 }
