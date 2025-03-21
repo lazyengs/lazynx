@@ -8,14 +8,14 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2018",
     "module": "esnext",
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@console/gonx": ["tools/gonx/src/index.ts"]
+      "@lazyengs/gonx": ["tools/gonx/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -37,14 +37,11 @@
         ]
       }
     },
-    "lint": {
-      "executor": "@nx/eslint:lint"
-    },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "jestConfig": "tools/gonx/jest.config.ts"
+        "reportsDirectory": "../../coverage/tools/gonx"
       }
     }
   }
