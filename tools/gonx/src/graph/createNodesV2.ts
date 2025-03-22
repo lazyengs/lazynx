@@ -5,8 +5,10 @@ import {
   TargetConfiguration,
   createNodesFromFiles,
   joinPathFragments,
+  workspaceRoot,
 } from '@nx/devkit';
-import { basename, dirname } from 'path';
+import { basename, dirname, join } from 'path';
+import { existsSync, readFileSync } from 'fs';
 
 // File glob to find all Go projects
 const goModGlob = '**/go.mod';
@@ -53,27 +55,15 @@ function createNodesInternal(
   const tidyTargetName = options.tidyTargetName || 'tidy';
   const lintTargetName = options.lintTargetName || 'lint';
 
-  // Build target configuration
-  const buildTarget: TargetConfiguration = {
-    executor: 'nx:run-commands',
-    options: {
-      command: 'go build .',
-      cwd: projectRoot,
-    },
-    cache: true,
-    inputs: [
-      '{projectRoot}/go.mod',
-      '{projectRoot}/go.sum',
-      joinPathFragments('{projectRoot}', '**', '*.go'),
-      {
-        externalDependencies: ['go'],
-      },
-    ],
-    outputs: ['{projectRoot}/' + projectName],
-  };
+  // Detect if this is an application or a library
+  const isApplication = hasMainPackage(projectRoot);
+  const projectType = isApplication ? 'application' : 'library';
 
-  // Test target configuration
-  const testTarget: TargetConfiguration = {
+  // Initialize targets object
+  const targets: Record<string, TargetConfiguration> = {};
+
+  // Common test target - available for both apps and libraries
+  targets[testTargetName] = {
     executor: 'nx:run-commands',
     options: {
       command: 'go test ./...',
@@ -91,17 +81,8 @@ function createNodesInternal(
     outputs: [],
   };
 
-  // Run target configuration - assuming there's a main.go to run
-  const runTarget: TargetConfiguration = {
-    executor: 'nx:run-commands',
-    options: {
-      command: 'go run .',
-      cwd: projectRoot,
-    },
-  };
-
-  // Tidy target configuration
-  const tidyTarget: TargetConfiguration = {
+  // Tidy target - available for both apps and libraries
+  targets[tidyTargetName] = {
     executor: 'nx:run-commands',
     options: {
       command: 'go mod tidy',
@@ -109,8 +90,8 @@ function createNodesInternal(
     },
   };
 
-  // Lint target configuration - using golangci-lint if it's installed
-  const lintTarget: TargetConfiguration = {
+  // Lint target - available for both apps and libraries
+  targets[lintTargetName] = {
     executor: 'nx:run-commands',
     options: {
       command: 'golangci-lint run',
@@ -118,19 +99,42 @@ function createNodesInternal(
     },
   };
 
+  // Build and run targets - only for applications
+  if (isApplication) {
+    targets[buildTargetName] = {
+      executor: 'nx:run-commands',
+      options: {
+        command: 'go build .',
+        cwd: projectRoot,
+      },
+      cache: true,
+      inputs: [
+        '{projectRoot}/go.mod',
+        '{projectRoot}/go.sum',
+        joinPathFragments('{projectRoot}', '**', '*.go'),
+        {
+          externalDependencies: ['go'],
+        },
+      ],
+      outputs: ['{projectRoot}/' + projectName],
+    };
+
+    targets[runTargetName] = {
+      executor: 'nx:run-commands',
+      options: {
+        command: 'go run .',
+        cwd: projectRoot,
+      },
+    };
+  }
+
   // Create the project configuration
   const projectConfig: ProjectConfiguration & { root: string } = {
     name: projectName,
     root: projectRoot,
     sourceRoot: projectRoot,
-    projectType: 'application',
-    targets: {
-      [buildTargetName]: buildTarget,
-      [testTargetName]: testTarget,
-      [runTargetName]: runTarget,
-      [tidyTargetName]: tidyTarget,
-      [lintTargetName]: lintTarget,
-    },
+    projectType,
+    targets,
     tags: options.tagName ? [options.tagName] : [],
   };
 
@@ -139,4 +143,33 @@ function createNodesInternal(
       [projectRoot]: projectConfig,
     },
   };
+}
+
+/**
+ * Determines if a Go module contains a main package,
+ * indicating it is an application rather than a library.
+ *
+ * @param projectRoot The root directory of the project
+ * @returns True if the project is an application, false otherwise
+ */
+function hasMainPackage(projectRoot: string): boolean {
+  try {
+    // Check if main.go exists in the project root
+    const mainGoPath = join(workspaceRoot, projectRoot, 'main.go');
+    if (existsSync(mainGoPath)) {
+      const content = readFileSync(mainGoPath, 'utf-8');
+      return content.includes('package main') && content.includes('func main(');
+    }
+
+    // Check for cmd directory structure (common Go pattern)
+    const cmdDirPath = join(workspaceRoot, projectRoot, 'cmd');
+    if (existsSync(cmdDirPath)) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    // If there's any error, default to treating it as a library
+    return false;
+  }
 }
