@@ -28,7 +28,7 @@
   "release": {
     "projectsRelationship": "independent",
     "projects": ["nxlsclient", "lazynx"],
-    "releaseTagPattern": "{projectName}@{version}",
+    "releaseTagPattern": "{projectName}@v{version}",
     "changelog": {
       "projectChangelogs": {
         "createRelease": "github"
@@ -37,10 +37,9 @@
       "commitMessageFormat": "conventional"
     },
     "version": {
+      "useLegacyVersioning": false,
       "conventionalCommits": true,
-      "generatorOptions": {
-        "currentVersionResolver": "git-tag"
-      }
+      "currentVersionResolver": "git-tag"
     }
   },
   "targetDefaults": {
@@ -75,6 +74,5 @@
       "cache": true,
       "inputs": ["default", "^production"]
     }
-  },
-  "useInferencePlugins": true
+  }
 }
