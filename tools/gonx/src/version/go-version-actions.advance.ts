@@ -10,7 +10,7 @@ import { ManifestData, VersionActions } from 'nx/release';
  * Implementation of version actions for Go projects.
  * This class handles versioning operations for Go modules using Git tags.
  */
-export class GoVersionActions extends VersionActions {
+export default class GoVersionActionsAdvanced extends VersionActions {
   /**
    * The filename for Go module manifest
    */
@@ -949,8 +949,3 @@ export class GoVersionActions extends VersionActions {
 function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
-/**
- * Export the Go version actions instance
- */
-export const goVersionActions = GoVersionActions;
