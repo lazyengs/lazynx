@@ -3,6 +3,7 @@ module internal/playground
 go 1.24
 
 require (
+	github.com/lazyengs/lazynx/pkg/nxlsclient v0.0.0
 	go.lsp.dev/protocol v0.12.0
 	go.uber.org/zap v1.27.0
 )
@@ -17,3 +18,5 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 )
+
+replace github.com/lazyengs/lazynx/pkg/nxlsclient => ../../pkg/nxlsclient
