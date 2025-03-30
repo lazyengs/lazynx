@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ProjectGraph, Tree } from '@nx/devkit';
-import * as path from 'node:path';
+import { join } from 'node:path';
 import { VersionActions } from 'nx/release';
 import { NxReleaseVersionV2Configuration } from 'nx/src/config/nx-json';
 
@@ -28,7 +28,7 @@ export default class GoVersionActions extends VersionActions {
   validManifestFilenames: string[] = [MANIFEST_FILENAME];
 
   // go.mod don't contain the version of the package, so we need to get the version from Git tags or from the registry
-  readCurrentVersionFromSourceManifest(
+  async readCurrentVersionFromSourceManifest(
     tree: Tree
   ): Promise<{ currentVersion: string; manifestPath: string } | null> {
     return null;
@@ -39,8 +39,8 @@ export default class GoVersionActions extends VersionActions {
     currentVersionResolverMetadata: NxReleaseVersionV2Configuration['currentVersionResolverMetadata']
   ): Promise<{ currentVersion: string | null; logText: string } | null> {
     try {
-      const manifestPath = path.join(
-        this.projectGraphNode.data.sourceRoot,
+      const manifestPath = join(
+        this.projectGraphNode.data.root,
         MANIFEST_FILENAME
       );
       const content = tree.read(manifestPath, 'utf-8');
@@ -62,9 +62,10 @@ export default class GoVersionActions extends VersionActions {
         };
       }
     } catch (error) {
-      console.error('Error checking proxy.golang.org:', error);
-
-      return null;
+      console.error(error);
+      throw new Error(
+        `Unable to determine the current version of "${this.projectGraphNode.name}" from  proxy.golang.org.`
+      );
     }
   }
 
