@@ -27,7 +27,7 @@
   ],
   "release": {
     "projectsRelationship": "independent",
-    "projects": ["nxlsclient", "lazynx"],
+    "projects": ["nxlsclient"],
     "releaseTagPattern": "{projectName}@v{version}",
     "changelog": {
       "projectChangelogs": {

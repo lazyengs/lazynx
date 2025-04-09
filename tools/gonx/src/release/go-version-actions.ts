@@ -85,8 +85,9 @@ export default class GoVersionActions extends VersionActions {
     throw new Error('Method not implemented.');
   }
 
-  isLocalDependencyProtocol(versionSpecifier: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isLocalDependencyProtocol(versionSpecifier: string): Promise<boolean> {
+    // we cannot determine the real value, so we default to true
+    return true;
   }
 
   async updateProjectVersion(
