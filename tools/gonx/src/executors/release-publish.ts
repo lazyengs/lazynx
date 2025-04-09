@@ -11,7 +11,6 @@ import { join } from 'node:path';
 import { env as appendLocalEnv } from 'npm-run-path';
 import { ReleasePublishExecutorSchema } from './schema';
 import chalk = require('chalk');
-import { NxJson } from 'nx/src/native';
 
 const LARGE_BUFFER = 1024 * 1000000;
 const DEFAULT_TAG_PATTERN = 'v{version}';
@@ -196,8 +195,10 @@ export default async function runExecutor(
     return {
       success: true,
     };
-  } catch (err: any) {
-    console.error('Publication failed:', err.message);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error('Publication failed:', err.message);
+    }
     return {
       success: false,
     };
