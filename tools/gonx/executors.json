@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "release-publish": {
+      "implementation": "./src/executors/release-publish",
+      "schema": "./src/executors/schema.json",
+      "description": "Publish a Go module to a registry as part of the release process"
+    }
+  }
+}

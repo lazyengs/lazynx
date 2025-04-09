@@ -4,6 +4,7 @@ import { tidy } from './tidy';
 import { lint } from './lint';
 import { build } from './build';
 import { run } from './run';
+import { releasePublish } from './release-publish';
 import { GoPluginOptions } from '../../types/go-plugin-options';
 import { hasMainPackage } from '../has-main-package';
 
@@ -20,6 +21,8 @@ export function getTargetsByProjectType(
   const runTargetName = options.runTargetName || 'serve';
   const tidyTargetName = options.tidyTargetName || 'tidy';
   const lintTargetName = options.lintTargetName || 'lint';
+  const releasePublishTargetName =
+    options.releasePublishTargetName || 'nx-release-publish';
 
   // Initialize targets object
   const targets: Record<string, TargetConfiguration> = {};
@@ -32,6 +35,9 @@ export function getTargetsByProjectType(
 
   // Lint target - available for both apps and libraries
   targets[lintTargetName] = lint(projectRoot);
+
+  // Release-publish target - available for both apps and libraries
+  targets[releasePublishTargetName] = releasePublish(projectRoot);
 
   // Build and run targets - only for applications
   if (isApplication) {

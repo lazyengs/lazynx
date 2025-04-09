@@ -11,6 +11,12 @@ importers:
       '@nx/devkit':
         specifier: 0.0.0-pr-30418-d6cd6b6
         version: 0.0.0-pr-30418-d6cd6b6(nx@0.0.0-pr-30418-d6cd6b6(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.15))(@swc/types@0.1.19)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.15)))
+      chalk:
+        specifier: 4.1.2
+        version: 4.1.2
+      npm-run-path:
+        specifier: 4.0.1
+        version: 4.0.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.8.0
