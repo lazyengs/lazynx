@@ -11,9 +11,6 @@ export const build = (projectRoot: string, projectName: string) => ({
     '{projectRoot}/go.mod',
     '{projectRoot}/go.sum',
     joinPathFragments('{projectRoot}', '**', '*.go'),
-    {
-      externalDependencies: ['go'],
-    },
   ],
   outputs: ['{projectRoot}/' + projectName],
 });
