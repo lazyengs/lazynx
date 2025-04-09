@@ -32,7 +32,7 @@ export function createNodesInternal(
     // Add release configuration for nx release
     release: {
       version: {
-        versionActions: 'tools/gonx/src/version/go-version-actions.ts',
+        versionActions: 'tools/gonx/src/release/go-version-actions.ts',
       },
     },
   };

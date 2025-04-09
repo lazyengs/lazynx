@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ProjectGraph, Tree } from '@nx/devkit';
 import { join } from 'node:path';
+import path = require('node:path');
 import { VersionActions } from 'nx/release';
 import { NxReleaseVersionV2Configuration } from 'nx/src/config/nx-json';
 
@@ -28,10 +29,14 @@ export default class GoVersionActions extends VersionActions {
   validManifestFilenames: string[] = [MANIFEST_FILENAME];
 
   // go.mod don't contain the version of the package, so we need to get the version from Git tags or from the registry
+  // but for `nx release --first-release` we provide a dise fallback for the git-tag strategy
   async readCurrentVersionFromSourceManifest(
     tree: Tree
   ): Promise<{ currentVersion: string; manifestPath: string } | null> {
-    return null;
+    return {
+      currentVersion: '0.0.0',
+      manifestPath: path.join(this.projectGraphNode.data.root, 'go.mod'),
+    };
   }
 
   async readCurrentVersionFromRegistry(
