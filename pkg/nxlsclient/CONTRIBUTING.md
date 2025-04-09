@@ -49,12 +49,14 @@ nxlsclient/
 ## Setup Development Environment
 
 1. Clone the repository
+
    ```bash
    git clone https://github.com/lazyengs/pkg
    cd pkg/nxlsclient
    ```
 
 2. Install dependencies
+
    ```bash
    go mod download
    ```

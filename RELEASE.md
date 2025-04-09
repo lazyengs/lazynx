@@ -48,6 +48,7 @@ To create a release manually:
 Tags follow the format: `{projectName}-v{version}`
 
 Examples:
+
 - `nxlsclient-v0.1.0`
 - `lazynx-v0.2.3`
 

@@ -63,7 +63,7 @@ func main() {
 
 	// Create a new client
 	client := nxlsclient.NewClient(nxWorkspacePath, true)
-	
+
 	// Setup context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -73,7 +73,7 @@ func main() {
 
 	// Create channel for initialization results
 	ch := make(chan *commands.InitializeRequestResult)
-	
+
 	// Start the client asynchronously
 	go func() {
 		params := &protocol.InitializeParams{
@@ -104,7 +104,7 @@ func main() {
 	init, ok := <-ch
 	if ok {
 		sugar.Infow("LSP server initialized successfully", "capabilities", init.Capabilities)
-		
+
 		// Now you can use the client.Commander to send requests
 		workspace, err := client.Commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
 			Reset: false,
