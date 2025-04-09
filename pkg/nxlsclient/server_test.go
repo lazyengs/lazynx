@@ -113,4 +113,3 @@ func TestInvalidWorkspacePath(t *testing.T) {
 	assert.NotNil(t, client, "Client should be created even with invalid path")
 	assert.Equal(t, invalidPath, client.NxWorkspacePath, "Workspace path should match")
 }
-

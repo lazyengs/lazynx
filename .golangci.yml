@@ -1,51 +1,65 @@
+version: '2'
 run:
-  timeout: 5m
+  go: '1.24'
   modules-download-mode: readonly
-  allow-parallel-runners: true
-  go: "1.24"
   tests: false
-
+  allow-parallel-runners: true
 linters:
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
-    - gofmt
-    - goimports
-    - gosec
-    - misspell
-    - revive
-    - gocyclo
     - dupl
     - goconst
+    - gocyclo
+    - gosec
+    - misspell
     - nolintlint
+    - revive
     - unconvert
     - whitespace
-
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  gosec:
-    excludes:
-      - G204 # Subprocess launched with a potential tainted input or cmd arguments
-  revive:
+    # Add new linters above, if needed
+  settings:
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocyclo:
+      min-complexity: 15
+    gosec:
+      excludes:
+        - G204
+    revive:
+      rules:
+        - name: exported
+          arguments:
+            - disableStutteringCheck
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: exported
-        arguments:
-          - disableStutteringCheck
-
+      - linters:
+          - dupl
+          - gosec
+        path: _test\.go
+      - linters:
+          - errcheck
+          - gocyclo
+        path: pkg/nxlsclient/examples/.*\.go$
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gosec
-        - dupl
   max-issues-per-linter: 0
   max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

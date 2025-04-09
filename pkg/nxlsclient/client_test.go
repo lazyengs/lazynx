@@ -255,4 +255,3 @@ func prettyPrintJSON(v interface{}) (string, error) {
 	}
 	return string(bytes), nil
 }
-
