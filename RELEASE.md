@@ -18,7 +18,7 @@ This document outlines our release strategy for packages in this repository.
 
 ### Automated Release Process
 
-Releases are automatically triggered when commits are pushed to the `main` branch:
+Releases are manually trigged but automatically executed using a github action pipeline:
 
 1. A GitHub Action checks for new changes in the projects
 2. The action runs tests and linters to ensure quality
@@ -26,17 +26,9 @@ Releases are automatically triggered when commits are pushed to the `main` branc
    - Determine the next version based on commit messages
    - Update version references
    - Generate a changelog
-   - Create Git tags with the format `{projectName}-v{version}`
+   - Create Git tags with the format `{projectName}@v{version}`
    - Create a GitHub release
 4. For the nxlsclient library, the module is published to pkg.go.dev
-
-### Manual Releases
-
-To create a release manually:
-
-1. Ensure your changes are committed and pushed to the main branch
-2. Run `nx release --projects=nxlsclient` (or `lazynx`) to create a release for a specific project
-3. Specify the version bump type when prompted (patch, minor, major)
 
 ## Viewing Release History
 
@@ -45,12 +37,12 @@ To create a release manually:
 
 ## Release Tagging Strategy
 
-Tags follow the format: `{projectName}-v{version}`
+Tags follow the format: `{projectName}@v{version}`
 
 Examples:
 
-- `nxlsclient-v0.1.0`
-- `lazynx-v0.2.3`
+- `nxlsclient@v0.1.0`
+- `lazynx@v0.2.3`
 
 ## For Go Module Users
 
