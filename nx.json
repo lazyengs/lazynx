@@ -19,7 +19,7 @@
   },
   "plugins": [
     {
-      "plugin": "@lazyengs/gonx",
+      "plugin": "@naxodev/gonx",
       "options": {
         "tagName": "plugin:gonx"
       }
