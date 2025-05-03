@@ -6,7 +6,7 @@
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "@naxodev/gonx": "0.0.1-alpha.4",
+    "@naxodev/gonx": "0.0.1-alpha.6",
     "@nx/devkit": "20.8.0",
     "@nx/eslint": "20.8.0",
     "@nx/eslint-plugin": "20.8.0",

@@ -42,6 +42,17 @@
     }
   },
   "targetDefaults": {
+    "@naxodev/gonx:lint": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/go.mod",
+        "{projectRoot}/go.sum",
+        "{projectRoot}/**/*.{go}"
+      ],
+      "options": {
+        "linter": "golangci-lint run"
+      }
+    },
     "@nx/js:tsc": {
       "cache": true,
       "dependsOn": ["^build"],
