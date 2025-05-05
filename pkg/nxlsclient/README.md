@@ -2,7 +2,7 @@
 
 A Go client library for the Nx Language Server Protocol (LSP) server.
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/lazyengs/pkg/nxlsclient.svg)](https://pkg.go.dev/github.com/lazyengs/pkg/nxlsclient)
+[![Go Reference](https://pkg.go.dev/badge/github.com/lazyengs/lazynx/pkg/nxlsclient.svg)](https://pkg.go.dev/github.com/lazyengs/lazynx/pkg/nxlsclient)
 
 ## Overview
 
@@ -27,7 +27,7 @@ This library is designed to work seamlessly with Nx workspace monorepos and inte
 ## Installation
 
 ```bash
-go get github.com/lazyengs/pkg/nxlsclient
+go get github.com/lazyengs/lazynx/pkg/nxlsclient
 ```
 
 ## Quick Start
@@ -43,8 +43,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/lazyengs/pkg/nxlsclient"
-	"github.com/lazyengs/pkg/nxlsclient/commands"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )
@@ -63,7 +63,7 @@ func main() {
 
 	// Create a new client
 	client := nxlsclient.NewClient(nxWorkspacePath, true)
-	
+
 	// Setup context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -73,7 +73,7 @@ func main() {
 
 	// Create channel for initialization results
 	ch := make(chan *commands.InitializeRequestResult)
-	
+
 	// Start the client asynchronously
 	go func() {
 		params := &protocol.InitializeParams{
@@ -104,7 +104,7 @@ func main() {
 	init, ok := <-ch
 	if ok {
 		sugar.Infow("LSP server initialized successfully", "capabilities", init.Capabilities)
-		
+
 		// Now you can use the client.Commander to send requests
 		workspace, err := client.Commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
 			Reset: false,

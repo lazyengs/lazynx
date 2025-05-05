@@ -25,12 +25,12 @@ The types in this package are primarily used as return types for commands in the
 	if err != nil {
 		// Handle error
 	}
-	
+
 	// Access project graph nodes
 	for name, node := range projectGraph.Nodes {
 		fmt.Printf("Project: %s, Type: %s\n", name, node.Type)
 	}
-	
+
 	// Access dependencies
 	for source, deps := range projectGraph.Dependencies {
 		fmt.Printf("Project %s has %d dependencies\n", source, len(deps))
@@ -75,6 +75,5 @@ GeneratorSchema represents an Nx generator schema:
 		Hidden      bool                       `json:"hidden"`
 		// Additional fields omitted for brevity
 	}
-
 */
 package nxtypes

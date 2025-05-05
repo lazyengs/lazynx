@@ -3,7 +3,7 @@ package nxlsclient
 import (
 	"context"
 
-	"github.com/lazyengs/pkg/nxlsclient/commands"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"github.com/sourcegraph/jsonrpc2"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
@@ -91,7 +91,10 @@ func (c *Client) Stop(ctx context.Context) {
 	}
 
 	c.Logger.Debugw("Clean up completed")
-	c.Logger.Sync()
+	err = c.Logger.Sync()
+	if err != nil {
+		c.Logger.Errorw("Failed to sync logger", "error", err.Error())
+	}
 }
 
 // OnNotification registers a handler for a specific notification method.

@@ -1,6 +1,7 @@
 # LazyNX Development Guide
 
 ## Build/Run/Test Commands
+
 - Run all tests: `nx run-many -t test`
 - Run single test: `nx run <project>:test -- -run <TestName>` (e.g. `nx run nxlsclient:test -- -run TestClientE2E`)
 - Run all linters: `nx run-many -t lint`
@@ -10,6 +11,7 @@
 - Update Go dependencies: `nx run <project>:tidy`
 
 ## Code Style Guidelines
+
 - **Formatting**: Go standard formatting (`gofmt`)
 - **Imports**: Standard Go import organization (stdlib, external, internal)
 - **Error Handling**: Check errors using `require` for tests, proper error propagation in application code

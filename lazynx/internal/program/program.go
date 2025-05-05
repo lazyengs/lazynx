@@ -82,7 +82,7 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	updatedModel, cmd := currentModel.Update(msg)
 
 	// The resulting model reflects the updated state, and it must be
-	// revalidated within our set of models, which is essentialy done
+	// revalidated within our set of models, which is essentially done
 	// by hot-swapping the model with the updated one.
 	m.updateModel(m.focusedModelId, updatedModel)
 

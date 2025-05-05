@@ -211,4 +211,3 @@ func TestNotificationListener(t *testing.T) {
 		disposable.Dispose()
 	})
 }
-

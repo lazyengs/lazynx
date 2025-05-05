@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	nxtypes "github.com/lazyengs/pkg/nxlsclient/nx-types"
+	nxtypes "github.com/lazyengs/lazynx/pkg/nxlsclient/nx-types"
 )
 
 const (

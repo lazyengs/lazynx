@@ -2,11 +2,89 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": ["default"],
+    "production": [
+      "default",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
+    ],
     "sharedGlobals": [
       "{workspaceRoot}/go.work",
       "{workspaceRoot}/.github/workflows/ci.yml"
     ]
   },
-  "plugins": ["@nx-go/nx-go"]
+  "plugins": [
+    {
+      "plugin": "@naxodev/gonx",
+      "options": {
+        "tagName": "plugin:gonx"
+      }
+    }
+  ],
+  "release": {
+    "projectsRelationship": "independent",
+    "projects": ["nxlsclient"],
+    "releaseTagPattern": "{projectName}@v{version}",
+    "changelog": {
+      "projectChangelogs": {
+        "createRelease": "github"
+      },
+      "workspaceChangelog": false,
+      "commitMessageFormat": "conventional"
+    },
+    "version": {
+      "useLegacyVersioning": false,
+      "currentVersionResolver": "git-tag",
+      "conventionalCommits": true
+    }
+  },
+  "targetDefaults": {
+    "@naxodev/gonx:lint": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/go.mod",
+        "{projectRoot}/go.sum",
+        "{projectRoot}/**/*.{go}"
+      ],
+      "options": {
+        "linter": "golangci-lint run"
+      }
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@nx/eslint:lint": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.js"
+      ]
+    },
+    "@nx/jest:jest": {
+      "cache": true,
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "options": {
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    },
+    "@nx/vite:test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    }
+  },
+  "nxCloudId": "68168cb4a835a331739fbd5d"
 }

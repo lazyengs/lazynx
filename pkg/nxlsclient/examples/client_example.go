@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lazyengs/pkg/nxlsclient"
-	"github.com/lazyengs/pkg/nxlsclient/commands"
-	nxtypes "github.com/lazyengs/pkg/nxlsclient/nx-types"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
+	nxtypes "github.com/lazyengs/lazynx/pkg/nxlsclient/nx-types"
 	"go.lsp.dev/protocol"
 	"go.uber.org/zap"
 )
@@ -124,12 +124,12 @@ func ExampleBasicUsage() {
 		if project.Name != nil {
 			projectName = *project.Name
 		}
-		
+
 		projectTypeStr := "unknown"
 		if project.ProjectType != nil {
 			projectTypeStr = string(*project.ProjectType)
 		}
-		
+
 		fmt.Printf("Current directory is part of project: %s\n", projectName)
 		fmt.Printf("Project root: %s\n", project.Root)
 		fmt.Printf("Project type: %s\n", projectTypeStr)
@@ -175,7 +175,7 @@ func ExampleHandlingClientNotifications() {
 	logMessages := make(chan string, 10)
 
 	// Register handlers for different notification types
-	
+
 	// 1. Register for refresh workspace started notification
 	client.OnNotification(
 		commands.RefreshWorkspaceStartedNotificationMethod,
@@ -212,7 +212,7 @@ func ExampleHandlingClientNotifications() {
 				case nxlsclient.LogDebug:
 					level = "DEBUG"
 				}
-				
+
 				message := fmt.Sprintf("[%s] %s", level, params.Message)
 				fmt.Println(message)
 				logMessages <- message
@@ -290,7 +290,7 @@ func ExampleProjectGraph() {
 	// Create and initialize client
 	client := nxlsclient.NewClient("/path/to/nx/workspace", true)
 	ctx := context.Background()
-	
+
 	// Start client and wait for initialization (implementation omitted for brevity)
 	// ...
 
@@ -325,37 +325,37 @@ func ExampleProjectGraph() {
 
 	// This is just example code that would work with a properly parsed graph:
 	/*
-	// Print basic project graph information
-	nodeCount := len(projectGraph.Nodes)
-	externalNodeCount := len(projectGraph.ExternalNodes)
-	fmt.Printf("Project graph contains %d projects and %d external nodes\n",
-		nodeCount, externalNodeCount)
+		// Print basic project graph information
+		nodeCount := len(projectGraph.Nodes)
+		externalNodeCount := len(projectGraph.ExternalNodes)
+		fmt.Printf("Project graph contains %d projects and %d external nodes\n",
+			nodeCount, externalNodeCount)
 
-	// Count projects by type
-	projectTypeCount := make(map[string]int)
-	for _, node := range projectGraph.Nodes {
-		projectTypeCount[node.Type]++
-	}
-	fmt.Println("Projects by type:")
-	for typ, count := range projectTypeCount {
-		fmt.Printf("- %s: %d\n", typ, count)
-	}
+		// Count projects by type
+		projectTypeCount := make(map[string]int)
+		for _, node := range projectGraph.Nodes {
+			projectTypeCount[node.Type]++
+		}
+		fmt.Println("Projects by type:")
+		for typ, count := range projectTypeCount {
+			fmt.Printf("- %s: %d\n", typ, count)
+		}
 
-	// Find projects with the most dependencies
-	type projectWithDeps struct {
-		name string
-		deps int
-	}
-	var projectsWithDeps []projectWithDeps
-	for name, deps := range projectGraph.Dependencies {
-		projectsWithDeps = append(projectsWithDeps, projectWithDeps{name, len(deps)})
-	}
+		// Find projects with the most dependencies
+		type projectWithDeps struct {
+			name string
+			deps int
+		}
+		var projectsWithDeps []projectWithDeps
+		for name, deps := range projectGraph.Dependencies {
+			projectsWithDeps = append(projectsWithDeps, projectWithDeps{name, len(deps)})
+		}
 	*/
 
 	// In a complete implementation, you would:
 	// 1. Sort projects by number of dependencies
 	// 2. Print the projects with the most dependencies
-	
+
 	fmt.Println("Projects with most dependencies would be listed here")
 	fmt.Println("For example:")
 	fmt.Println("- project1: 15 dependencies")
@@ -369,7 +369,7 @@ func ExampleProjectGraph() {
 	// This is a simplified approach - in a real implementation, you would use:
 	// 1. SendSourceMapFilesToProjectsMapRequest to get the file-to-project mapping
 	// 2. Or derive affected projects from the dependency graph
-	
+
 	fmt.Printf("Projects affected by changes to %s:\n", targetFile)
 	for name, project := range affectedProjects {
 		fmt.Printf("- %s (%s)\n", name, project.Root)

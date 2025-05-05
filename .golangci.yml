@@ -1,0 +1,65 @@
+version: '2'
+run:
+  go: '1.24'
+  modules-download-mode: readonly
+  tests: false
+  allow-parallel-runners: true
+linters:
+  enable:
+    - dupl
+    - goconst
+    - gocyclo
+    - gosec
+    - misspell
+    - nolintlint
+    - revive
+    - unconvert
+    - whitespace
+    # Add new linters above, if needed
+  settings:
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocyclo:
+      min-complexity: 15
+    gosec:
+      excludes:
+        - G204
+    revive:
+      rules:
+        - name: exported
+          arguments:
+            - disableStutteringCheck
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - dupl
+          - gosec
+        path: _test\.go
+      - linters:
+          - errcheck
+          - gocyclo
+        path: pkg/nxlsclient/examples/.*\.go$
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

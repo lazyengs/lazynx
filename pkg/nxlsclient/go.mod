@@ -1,6 +1,6 @@
-module github.com/lazyengs/pkg/nxlsclient
+module github.com/lazyengs/lazynx/pkg/nxlsclient
 
-go 1.23
+go 1.24
 
 require (
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0

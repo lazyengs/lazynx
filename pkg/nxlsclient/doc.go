@@ -97,4 +97,3 @@ The client supports event-based programming through LSP notifications:
   - nx-types: Contains Nx-specific type definitions
 */
 package nxlsclient
-

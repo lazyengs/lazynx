@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    # Only release from the main branch
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          check-latest: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set Git User
+        run: |
+          git config --global user.name "Lazybot"
+          git config --global user.email "lazybot@lazyengs.com"
+
+      # Run tests and lint for all projects first to ensure quality
+      - name: Run Tests and Lint
+        run: pnpm exec nx run-many -t test lint
+
+      # Release the nxlsclient library
+      - name: Release nxlsclient
+        id: release-nxlsclient
+        run: |
+          # Version the package
+          pnpm exec nx release --projects=nxlsclient --dry-run
+          pnpm exec nx release --projects=nxlsclient
