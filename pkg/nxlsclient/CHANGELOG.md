@@ -1,3 +1,14 @@
+## 0.0.1-rc.1 (2025-05-05)
+
+### 🩹 Fixes
+
+- use version of gonx with publish fixed ([7cf1fc2](https://github.com/lazyengs/lazynx/commit/7cf1fc2))
+- use the stable version of gonx ([0beb03a](https://github.com/lazyengs/lazynx/commit/0beb03a))
+
+### ❤️ Thank You
+
+- Nacho Vazquez
+
 ## 0.0.1-rc.0 (2025-05-05)
 
 ### 🚀 Features
