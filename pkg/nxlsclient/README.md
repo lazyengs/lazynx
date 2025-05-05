@@ -15,6 +15,9 @@ A Go client library for the Nx Language Server Protocol (LSP) server.
 
 This library is designed to work seamlessly with Nx workspace monorepos and integrates the nxls server directly, removing the need for external dependencies.
 
+> [!NOTE]
+> This is not an official Nx project.
+
 ## Features
 
 - **Zero external dependencies**: The nxls server is embedded directly in the library
@@ -36,88 +39,88 @@ go get github.com/lazyengs/lazynx/pkg/nxlsclient
 package main
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"os/signal"
-	"path/filepath"
-	"syscall"
+ "context"
+ "fmt"
+ "os"
+ "os/signal"
+ "path/filepath"
+ "syscall"
 
-	"github.com/lazyengs/lazynx/pkg/nxlsclient"
-	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
-	"go.lsp.dev/protocol"
-	"go.uber.org/zap"
+ "github.com/lazyengs/lazynx/pkg/nxlsclient"
+ "github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
+ "go.lsp.dev/protocol"
+ "go.uber.org/zap"
 )
 
 func main() {
-	// Setup logger
-	logger, _ := zap.NewDevelopment()
-	sugar := logger.Sugar()
-	defer sugar.Sync()
+ // Setup logger
+ logger, _ := zap.NewDevelopment()
+ sugar := logger.Sugar()
+ defer sugar.Sync()
 
-	// Get absolute path to your Nx workspace
-	nxWorkspacePath, err := filepath.Abs(".")
-	if err != nil {
-		sugar.Fatal(err)
-	}
+ // Get absolute path to your Nx workspace
+ nxWorkspacePath, err := filepath.Abs(".")
+ if err != nil {
+  sugar.Fatal(err)
+ }
 
-	// Create a new client
-	client := nxlsclient.NewClient(nxWorkspacePath, true)
+ // Create a new client
+ client := nxlsclient.NewClient(nxWorkspacePath, true)
 
-	// Setup context with cancellation
-	ctx, cancel := context.WithCancel(context.Background())
+ // Setup context with cancellation
+ ctx, cancel := context.WithCancel(context.Background())
 
-	// Handle termination signals
-	signalChan := make(chan os.Signal, 2)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+ // Handle termination signals
+ signalChan := make(chan os.Signal, 2)
+ signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 
-	// Create channel for initialization results
-	ch := make(chan *commands.InitializeRequestResult)
+ // Create channel for initialization results
+ ch := make(chan *commands.InitializeRequestResult)
 
-	// Start the client asynchronously
-	go func() {
-		params := &protocol.InitializeParams{
-			RootURI: protocol.DocumentURI(client.NxWorkspacePath),
-			Capabilities: protocol.ClientCapabilities{
-				Workspace: &protocol.WorkspaceClientCapabilities{
-					Configuration: true,
-				},
-				TextDocument: &protocol.TextDocumentClientCapabilities{},
-			},
-			InitializationOptions: map[string]any{
-				"workspacePath": client.NxWorkspacePath,
-			},
-		}
-		client.Start(ctx, params, ch)
-	}()
+ // Start the client asynchronously
+ go func() {
+  params := &protocol.InitializeParams{
+   RootURI: protocol.DocumentURI(client.NxWorkspacePath),
+   Capabilities: protocol.ClientCapabilities{
+    Workspace: &protocol.WorkspaceClientCapabilities{
+     Configuration: true,
+    },
+    TextDocument: &protocol.TextDocumentClientCapabilities{},
+   },
+   InitializationOptions: map[string]any{
+    "workspacePath": client.NxWorkspacePath,
+   },
+  }
+  client.Start(ctx, params, ch)
+ }()
 
-	// Handle termination
-	go func() {
-		<-signalChan
-		sugar.Info("Received interrupt signal")
-		client.Stop(ctx)
-		cancel()
-		signal.Stop(signalChan)
-	}()
+ // Handle termination
+ go func() {
+  <-signalChan
+  sugar.Info("Received interrupt signal")
+  client.Stop(ctx)
+  cancel()
+  signal.Stop(signalChan)
+ }()
 
-	// Process initialization result
-	init, ok := <-ch
-	if ok {
-		sugar.Infow("LSP server initialized successfully", "capabilities", init.Capabilities)
+ // Process initialization result
+ init, ok := <-ch
+ if ok {
+  sugar.Infow("LSP server initialized successfully", "capabilities", init.Capabilities)
 
-		// Now you can use the client.Commander to send requests
-		workspace, err := client.Commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
-			Reset: false,
-		})
-		if err != nil {
-			sugar.Errorf("Failed to get workspace: %v", err)
-		} else {
-			sugar.Infow("Retrieved workspace information", "version", workspace.NxVersion)
-		}
-	}
+  // Now you can use the client.Commander to send requests
+  workspace, err := client.Commander.SendWorkspaceRequest(ctx, &commands.WorkspaceRequestParams{
+   Reset: false,
+  })
+  if err != nil {
+   sugar.Errorf("Failed to get workspace: %v", err)
+  } else {
+   sugar.Infow("Retrieved workspace information", "version", workspace.NxVersion)
+  }
+ }
 
-	// Wait for context to be done
-	<-ctx.Done()
+ // Wait for context to be done
+ <-ctx.Done()
 }
 ```
 
