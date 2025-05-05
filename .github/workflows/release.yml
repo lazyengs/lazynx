@@ -53,13 +53,3 @@ jobs:
           # Version the package
           pnpm exec nx release --projects=nxlsclient --dry-run
           pnpm exec nx release --projects=nxlsclient
-
-      # The following step will run tests and then publish to pkg.go.dev
-      - name: Publish to Go pkg.dev
-        if: ${{ steps.release-nxlsclient.outcome == 'success' }}
-        run: |
-          # Running go list will cause the module to be indexed on pkg.go.dev
-          go list -m github.com/lazyengs/lazynx/pkg/nxlsclient@$(git describe --tags --match="nxlsclient@*" --abbrev=0)
-
-          # For verification, run one more time with verbose output
-          GOPROXY=proxy.golang.org go list -m -json github.com/lazyengs/lazynx/pkg/nxlsclient@$(git describe --tags --match="nxlsclient@*" --abbrev=0)
