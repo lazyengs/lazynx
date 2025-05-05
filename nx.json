@@ -38,7 +38,8 @@
     },
     "version": {
       "useLegacyVersioning": false,
-      "currentVersionResolver": "git-tag"
+      "currentVersionResolver": "git-tag",
+      "conventionalCommits": true
     }
   },
   "targetDefaults": {
