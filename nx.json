@@ -32,7 +32,7 @@
   ],
   "release": {
     "projectsRelationship": "independent",
-    "projects": ["nxlsclient"],
+    "projects": ["pkg/nxlsclient"],
     "releaseTagPattern": "{projectName}/v{version}",
     "changelog": {
       "projectChangelogs": {

@@ -46,10 +46,10 @@ jobs:
       - name: Run Tests and Lint
         run: pnpm exec nx run-many -t test lint
 
-      # Release the nxlsclient library
-      - name: Release nxlsclient
-        id: release-nxlsclient
+      # Release all projects
+      - name: Release
+        id: release
         run: |
           # Version the package
-          pnpm exec nx release --projects=nxlsclient --dry-run
-          pnpm exec nx release --projects=nxlsclient
+          pnpm exec nx release --dry-run
+          pnpm exec nx release
