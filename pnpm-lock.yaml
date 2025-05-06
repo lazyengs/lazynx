@@ -12,8 +12,8 @@ importers:
         specifier: ^9.8.0
         version: 9.26.0
       '@naxodev/gonx':
-        specifier: 1.0.0-rc.15
-        version: 1.0.0-rc.15(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.21)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))
+        specifier: 1.0.0
+        version: 1.0.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.21)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))
       '@nx/devkit':
         specifier: 21.0.0
         version: 21.0.0(nx@21.0.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.21)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
@@ -1157,8 +1157,8 @@ packages:
   '@napi-rs/wasm-runtime@0.2.4':
     resolution: {integrity: sha512-9zESzOO5aDByvhIAsOy9TbpZ0Ur2AJbUI7UT73kcUTS2mxAMHOBaa1st/jAymNoCtvrit99kkzT1FZuXVcgfIQ==}
 
-  '@naxodev/gonx@1.0.0-rc.15':
-    resolution: {integrity: sha512-uXxkQ+x/p/q4anuAHEJxZttrP1pi5mUC3tOWvttb1mjhtFF+41PhROkQa8Zk1rRxDekQmDE49YzDO/gjFXboEQ==}
+  '@naxodev/gonx@1.0.0':
+    resolution: {integrity: sha512-PB+qkyFQBN/8K8gyY1m76zhAevZCLZC1qdyLqWBsfQ4PnWqbg3CyzQG1AVUplyG7+o804DkOFUJb1JKdaKDO8Q==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -5398,7 +5398,7 @@ snapshots:
       '@emnapi/runtime': 1.4.3
       '@tybys/wasm-util': 0.9.0
 
-  '@naxodev/gonx@1.0.0-rc.15(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.21)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))':
+  '@naxodev/gonx@1.0.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.21)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))':
     dependencies:
       '@nx/devkit': 21.0.0(nx@21.0.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.21)(typescript@5.7.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
       chalk: 4.1.2
