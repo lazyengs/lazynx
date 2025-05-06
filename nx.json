@@ -33,7 +33,7 @@
   "release": {
     "projectsRelationship": "independent",
     "projects": ["nxlsclient"],
-    "releaseTagPattern": "{projectName}@v{version}",
+    "releaseTagPattern": "{projectName}/v{version}",
     "changelog": {
       "projectChangelogs": {
         "createRelease": "github"
