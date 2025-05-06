@@ -1,7 +1,11 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals", "{projectRoot}/*.md"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals",
+      "{projectRoot}/README.md"
+    ],
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
@@ -11,7 +15,7 @@
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s",
-      "{projectRoot}/*.md"
+      "{projectRoot}/README.md"
     ],
     "sharedGlobals": [
       "{workspaceRoot}/go.work",
