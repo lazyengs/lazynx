@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "default": ["{projectRoot}/**/*", "sharedGlobals", "{projectRoot}/*.md"],
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
@@ -10,7 +10,8 @@
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/src/test-setup.[jt]s",
-      "!{projectRoot}/test-setup.[jt]s"
+      "!{projectRoot}/test-setup.[jt]s",
+      "{projectRoot}/*.md"
     ],
     "sharedGlobals": [
       "{workspaceRoot}/go.work",
@@ -39,6 +40,11 @@
     "version": {
       "useLegacyVersioning": false,
       "conventionalCommits": true
+    },
+    "conventionalCommits": {
+      "docs": {
+        "semverBump": "patch"
+      }
     }
   },
   "targetDefaults": {
