@@ -36,7 +36,8 @@
     "releaseTagPattern": "{projectName}/v{version}",
     "changelog": {
       "projectChangelogs": {
-        "createRelease": "github"
+        "createRelease": "github",
+        "file": false
       },
       "workspaceChangelog": false,
       "commitMessageFormat": "conventional"
