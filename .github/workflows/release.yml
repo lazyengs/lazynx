@@ -54,6 +54,8 @@ jobs:
       # Release all projects
       - name: Release
         id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Version the package
           pnpm exec nx release --dry-run
