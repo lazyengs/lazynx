@@ -1,4 +1,4 @@
-![.github/banner.png](.github/banner.png)
+![Logo](https://pub-fbe92a1118f84492b43a7f815ef0dd0a.r2.dev/banner.png)
 
 # LazyNX
 
