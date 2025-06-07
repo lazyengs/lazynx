@@ -1,0 +1,58 @@
+package utils
+
+import (
+	"context"
+	"encoding/json"
+	"path/filepath"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
+	"go.lsp.dev/protocol"
+	"go.uber.org/zap"
+)
+
+func StartNxlsclient(ctx context.Context, p *tea.Program, logger *zap.SugaredLogger) *nxlsclient.Client {
+	currentNxWorkspacePath, _ := filepath.Abs("./")
+
+	// Setup separate logger for nxlsclient
+	nxlsclientLogFile := filepath.Join(filepath.Dir(GetDefaultLogFile()), "nxlsclient.log")
+	nxlsclientLogger, err := SetupFileLogger(nxlsclientLogFile, true)
+	if err != nil {
+		logger.Errorw("Failed to setup nxlsclient logger, using main logger", "error", err)
+		nxlsclientLogger = logger
+	}
+
+	// Create the client with custom logger
+	client := nxlsclient.NewClientWithLogger(currentNxWorkspacePath, true, nxlsclientLogger)
+	logger.Infow("Created nxlsclient", "workspacePath", currentNxWorkspacePath)
+
+	params := &protocol.InitializeParams{
+		RootURI: protocol.DocumentURI(client.NxWorkspacePath),
+		Capabilities: protocol.ClientCapabilities{
+			Workspace: &protocol.WorkspaceClientCapabilities{
+				Configuration: true,
+			},
+			TextDocument: &protocol.TextDocumentClientCapabilities{},
+		},
+		InitializationOptions: map[string]any{
+			"workspacePath": client.NxWorkspacePath,
+		},
+	}
+	// Channel for initialization result
+	ch := make(chan *commands.InitializeRequestResult)
+
+	client.OnNotification(commands.RefreshWorkspaceNotificationMethod, func(method string, params json.RawMessage) error {
+		logger.Debugw("Received refresh workspace notification", "method", method)
+		p.Send(tea.Msg(commands.RefreshWorkspaceNotificationMethod))
+		return nil
+	})
+
+	logger.Info("Starting nxlsclient")
+	err = client.Start(ctx, params, ch)
+	if err != nil {
+		logger.Errorw("Failed to start nxlsclient", "error", err)
+	}
+
+	return client
+}
