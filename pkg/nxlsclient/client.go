@@ -37,6 +37,18 @@ func NewClient(nxWorkspacePath string, verbose bool) *Client {
 	}
 }
 
+// NewClientWithLogger creates a new Client struct instance with a custom logger.
+func NewClientWithLogger(nxWorkspacePath string, verbose bool, logger *zap.SugaredLogger) *Client {
+	logger.Debugw("Creating new client with custom logger")
+
+	return &Client{
+		Logger:               logger,
+		NxWorkspacePath:      nxWorkspacePath,
+		isVerbose:            verbose,
+		notificationListener: newNotificationListener(),
+	}
+}
+
 // Start spawns the nxls server process, sends the initialize command to the LSP server and listen for incoming messages.
 func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParams, ch chan *commands.InitializeRequestResult) error {
 	c.Logger.Debugw("Starting client")
