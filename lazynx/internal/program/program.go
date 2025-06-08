@@ -1,15 +1,13 @@
 package program
 
 import (
-	"context"
-
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/lazyengs/lazynx/internal/models/welcome"
-	"github.com/lazyengs/lazynx/internal/utils"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.uber.org/zap"
 )
 
@@ -25,27 +23,28 @@ type ProgramModel struct {
 	workspacePath string
 }
 
-type initResultMsg struct {
-	err error
-}
-
-func createProgram(client *nxlsclient.Client, logger *zap.SugaredLogger) ProgramModel {
+func createProgram(client *nxlsclient.Client, logger *zap.SugaredLogger, workspacePath string) ProgramModel {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return ProgramModel{
-		welcomeModel: welcome.New(),
-		spinner:      s,
-		client:       client,
-		logger:       logger,
-		initialized:  false,
-		initializing: false,
+		welcomeModel:  welcome.New(workspacePath),
+		spinner:       s,
+		client:        client,
+		logger:        logger,
+		initialized:   false,
+		initializing:  true, // Start in initializing state since init starts immediately
+		workspacePath: workspacePath,
 	}
 }
 
 func (m ProgramModel) Init() tea.Cmd {
-	return m.welcomeModel.Init()
+	// Start with spinner since initialization starts immediately in CLI
+	return tea.Batch(
+		m.welcomeModel.Init(),
+		m.spinner.Tick,
+	)
 }
 
 func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -66,22 +65,10 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		}
-	case welcome.WorkspacePathMsg:
-		if !m.initializing {
-			m.workspacePath = msg.Path
-			m.initializing = true
-			return m, tea.Batch(
-				m.spinner.Tick,
-				m.initializeClient(),
-			)
-		}
-	case initResultMsg:
+	case *commands.InitializeRequestResult:
+		// Initialization completed successfully
 		m.initializing = false
-		if msg.err != nil {
-			m.errorMsg = msg.err.Error()
-		} else {
-			m.initialized = true
-		}
+		m.initialized = true
 		return m, nil
 	}
 
@@ -98,30 +85,9 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m ProgramModel) initializeClient() tea.Cmd {
-	return func() tea.Msg {
-		ctx := context.Background()
-		err := utils.InitializeNxlsclient(ctx, m.client, m.workspacePath, nil, m.logger)
-		return initResultMsg{err: err}
-	}
-}
-
 func (m ProgramModel) View() string {
 	if m.initialized {
-		return lipgloss.JoinVertical(
-			lipgloss.Center,
-			"",
-			lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#00FF00")).
-				Bold(true).
-				Render("✓ Workspace initialized successfully!"),
-			"",
-			"Workspace: "+m.workspacePath,
-			"",
-			lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#888888")).
-				Render("Press Ctrl+C to exit"),
-		)
+		return m.welcomeModel.View()
 	}
 
 	if m.initializing {
@@ -158,6 +124,6 @@ func (m ProgramModel) View() string {
 	return m.welcomeModel.View()
 }
 
-func Create(client *nxlsclient.Client, logger *zap.SugaredLogger) *tea.Program {
-	return tea.NewProgram(createProgram(client, logger), tea.WithAltScreen())
+func Create(client *nxlsclient.Client, logger *zap.SugaredLogger, workspacePath string) *tea.Program {
+	return tea.NewProgram(createProgram(client, logger, workspacePath), tea.WithAltScreen())
 }

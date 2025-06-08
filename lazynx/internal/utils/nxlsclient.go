@@ -39,19 +39,6 @@ func InitializeNxlsclient(ctx context.Context, client *nxlsclient.Client, worksp
 		client.NxWorkspacePath = absPath
 	}
 
-	params := &protocol.InitializeParams{
-		RootURI: protocol.DocumentURI(client.NxWorkspacePath),
-		Capabilities: protocol.ClientCapabilities{
-			Workspace: &protocol.WorkspaceClientCapabilities{
-				Configuration: true,
-			},
-			TextDocument: &protocol.TextDocumentClientCapabilities{},
-		},
-		InitializationOptions: map[string]any{
-			"workspacePath": client.NxWorkspacePath,
-		},
-	}
-
 	// Channel for initialization result
 	ch := make(chan *commands.InitializeRequestResult)
 
@@ -61,12 +48,31 @@ func InitializeNxlsclient(ctx context.Context, client *nxlsclient.Client, worksp
 		return nil
 	})
 
-	logger.Info("Starting nxlsclient")
-	err := client.Start(ctx, params, ch)
-	if err != nil {
-		logger.Errorw("Failed to start nxlsclient", "error", err)
-		return err
-	}
+	// Start client in a goroutine
+	go func() {
+		logger.Infow("Starting client...")
+		params := &protocol.InitializeParams{
+			RootURI: protocol.DocumentURI(client.NxWorkspacePath),
+			Capabilities: protocol.ClientCapabilities{
+				Workspace: &protocol.WorkspaceClientCapabilities{
+					Configuration: true,
+				},
+				TextDocument: &protocol.TextDocumentClientCapabilities{},
+			},
+			InitializationOptions: map[string]any{
+				"workspacePath": client.NxWorkspacePath,
+			},
+		}
+		err := client.Start(ctx, params, ch)
+		if err != nil {
+			logger.Errorw("Error starting client", "error", err)
+		}
+	}()
+
+	res := <-ch
+
+	logger.Debugw("Received initialization result", "result", res)
+	p.Send(tea.Msg(res))
 
 	return nil
 }

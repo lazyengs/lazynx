@@ -77,6 +77,7 @@ func (c *Client) Start(ctx context.Context, initParams *protocol.InitializeParam
 	initResponse, err := c.Commander.SendInitializeRequest(ctx, initParams)
 
 	ch <- initResponse
+
 	close(ch)
 	if err != nil {
 		c.Stop(ctx)
