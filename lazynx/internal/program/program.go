@@ -59,6 +59,8 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.viewport = msg
+		m.welcomeModel, cmd = m.welcomeModel.Update(msg)
+		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":

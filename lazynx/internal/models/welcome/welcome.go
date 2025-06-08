@@ -54,7 +54,7 @@ func (m Model) View() string {
 	logoStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#002F56")).
 		Bold(true).
-		AlignHorizontal(lipgloss.Center)
+		AlignHorizontal(lipgloss.Center).MarginTop(m.height / 4)
 
 	subtitle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#4ECDC4")).
@@ -75,7 +75,7 @@ func (m Model) View() string {
 
 	// Create the main content
 	content := lipgloss.JoinVertical(
-		lipgloss.Center,
+		lipgloss.Top,
 		logoStyle.Render(logo),
 		"",
 		subtitle,
@@ -86,18 +86,12 @@ func (m Model) View() string {
 		instructions,
 	)
 
-	// Calculate max width (80 chars or terminal width, whichever is smaller)
-	maxWidth := 80
-	if m.width > 0 && m.width < maxWidth {
-		maxWidth = m.width - 4 // Leave some margin
-	}
-
-	// Create a container with proper centering
+	// Create a container with proper horizontal centering
 	container := lipgloss.NewStyle().
-		Width(maxWidth).
+		Width(m.width).
 		Height(m.height).
-		Align(lipgloss.Center).
-		AlignVertical(lipgloss.Center).
+		AlignHorizontal(lipgloss.Center).
+		AlignVertical(lipgloss.Top).
 		Render(content)
 
 	return container
