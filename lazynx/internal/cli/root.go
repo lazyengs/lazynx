@@ -24,7 +24,7 @@ var rootCmd = &cobra.Command{
 	Long: `LazyNX is a modern TUI application for managing Nx workspaces.
 
 Provide the path to your Nx workspace as an argument, or you will be prompted
-to select the nx.json file using an interactive file picker.`,
+to enter the workspace path with validation to ensure it contains nx.json.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runLazyNX,
 }
@@ -88,45 +88,67 @@ func runLazyNX(cmd *cobra.Command, args []string) error {
 }
 
 func promptForWorkspacePath(logger *zap.SugaredLogger) string {
-	logger.Info("Prompting user to select nx.json file")
+	logger.Info("Prompting user for workspace path")
 
-	var nxJsonPath string
+	var workspacePath string
 
-	picker := huh.NewForm(huh.NewGroup(huh.NewFilePicker().
-		Title("Select nx.json file").
-		Description("Navigate to and select the nx.json file in your Nx workspace").
-		DirAllowed(false).
-		FileAllowed(true).
-		AllowedTypes([]string{".json"}).
-		Value(&nxJsonPath))).WithShowHelp(true)
+	input := huh.NewInput().
+		Title("Nx Workspace Path").
+		Description("Enter the path to your Nx workspace (directory containing nx.json)").
+		Placeholder("./").
+		Value(&workspacePath).
+		Validate(func(s string) error {
+			return validateWorkspacePath(s, logger)
+		})
 
-	err := picker.Run()
+	err := input.Run()
 	if err != nil {
-		logger.Errorw("Error running file picker", "error", err)
-		fmt.Fprintf(os.Stderr, "Error selecting nx.json file: %v\n", err)
+		logger.Errorw("Error running input prompt", "error", err)
+		fmt.Fprintf(os.Stderr, "Error getting workspace path: %v\n", err)
 		os.Exit(1)
 	}
 
-	if nxJsonPath == "" {
-		logger.Error("No nx.json file selected by user")
-		fmt.Fprintf(os.Stderr, "No nx.json file selected\n")
-		os.Exit(1)
+	if workspacePath == "" {
+		workspacePath = "./"
 	}
 
-	fileName := filepath.Base(nxJsonPath)
-	logger.Debugw("User selected file", "path", nxJsonPath, "fileName", fileName)
-
-	if fileName != "nx.json" {
-		logger.Errorw("Selected file is not nx.json", "fileName", fileName, "expectedFileName", "nx.json")
-		fmt.Fprintf(os.Stderr, "Selected file is not nx.json: %s\n", fileName)
-		os.Exit(1)
-	}
-
-	// Extract the directory path from the nx.json file path
-	workspacePath := filepath.Dir(nxJsonPath)
-	logger.Infow("Successfully extracted workspace path from nx.json", "workspacePath", workspacePath, "nxJsonPath", nxJsonPath)
-
+	logger.Infow("User provided workspace path", "workspacePath", workspacePath)
 	return workspacePath
+}
+
+func validateWorkspacePath(path string, logger *zap.SugaredLogger) error {
+	if path == "" {
+		path = "./"
+	}
+
+	// Convert to absolute path
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		logger.Debugw("Failed to convert to absolute path", "path", path, "error", err)
+		return fmt.Errorf("invalid path: %s", path)
+	}
+
+	// Check if directory exists
+	info, err := os.Stat(absPath)
+	if err != nil {
+		logger.Debugw("Path does not exist", "path", absPath, "error", err)
+		return fmt.Errorf("path does not exist: %s", path)
+	}
+
+	if !info.IsDir() {
+		logger.Debugw("Path is not a directory", "path", absPath)
+		return fmt.Errorf("path is not a directory: %s", path)
+	}
+
+	// Check if nx.json exists in the directory
+	nxJsonPath := filepath.Join(absPath, "nx.json")
+	if _, err := os.Stat(nxJsonPath); err != nil {
+		logger.Debugw("nx.json not found in directory", "path", absPath, "nxJsonPath", nxJsonPath)
+		return fmt.Errorf("nx.json not found in directory: %s", path)
+	}
+
+	logger.Debugw("Valid Nx workspace found", "workspacePath", absPath, "nxJsonPath", nxJsonPath)
+	return nil
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
