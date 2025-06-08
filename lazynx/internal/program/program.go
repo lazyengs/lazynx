@@ -11,14 +11,20 @@ import (
 	"go.uber.org/zap"
 )
 
+type activeView uint
+
+const (
+	spinnerView activeView = iota // Initial loading state
+	welcomeView
+)
+
 type ProgramModel struct {
-	welcomeModel  tea.Model
-	spinner       spinner.Model
+	welcomeModel  welcome.Model
+	spinnerModel  spinner.Model
+	activeView    activeView
 	viewport      tea.WindowSizeMsg
 	client        *nxlsclient.Client
 	logger        *zap.SugaredLogger
-	initialized   bool
-	initializing  bool
 	errorMsg      string
 	workspacePath string
 }
@@ -30,11 +36,10 @@ func createProgram(client *nxlsclient.Client, logger *zap.SugaredLogger, workspa
 
 	return ProgramModel{
 		welcomeModel:  welcome.New(workspacePath),
-		spinner:       s,
+		spinnerModel:  s,
 		client:        client,
+		activeView:    spinnerView,
 		logger:        logger,
-		initialized:   false,
-		initializing:  true, // Start in initializing state since init starts immediately
 		workspacePath: workspacePath,
 	}
 }
@@ -43,7 +48,7 @@ func (m ProgramModel) Init() tea.Cmd {
 	// Start with spinner since initialization starts immediately in CLI
 	return tea.Batch(
 		m.welcomeModel.Init(),
-		m.spinner.Tick,
+		m.spinnerModel.Tick,
 	)
 }
 
@@ -67,18 +72,17 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case *commands.InitializeRequestResult:
 		// Initialization completed successfully
-		m.initializing = false
-		m.initialized = true
+		m.activeView = welcomeView
 		return m, nil
 	}
 
-	if !m.initialized && !m.initializing {
+	if m.activeView == welcomeView {
 		m.welcomeModel, cmd = m.welcomeModel.Update(msg)
 		cmds = append(cmds, cmd)
 	}
 
-	if m.initializing {
-		m.spinner, cmd = m.spinner.Update(msg)
+	if m.activeView == spinnerView {
+		m.spinnerModel, cmd = m.spinnerModel.Update(msg)
 		cmds = append(cmds, cmd)
 	}
 
@@ -86,17 +90,17 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ProgramModel) View() string {
-	if m.initialized {
+	if m.activeView == welcomeView {
 		return m.welcomeModel.View()
 	}
 
-	if m.initializing {
+	if m.activeView == spinnerView {
 		return lipgloss.JoinVertical(
 			lipgloss.Center,
 			"",
 			lipgloss.JoinHorizontal(
 				lipgloss.Center,
-				m.spinner.View(),
+				m.spinnerModel.View(),
 				"  Initializing workspace...",
 			),
 			"",
@@ -121,7 +125,7 @@ func (m ProgramModel) View() string {
 		)
 	}
 
-	return m.welcomeModel.View()
+	return ""
 }
 
 func Create(client *nxlsclient.Client, logger *zap.SugaredLogger, workspacePath string) *tea.Program {

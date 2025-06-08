@@ -5,27 +5,27 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type WelcomeModel struct {
+type Model struct {
 	workspacePath string
 	width         int
 	height        int
 }
 
-func New(workspacePath string) WelcomeModel {
+func New(workspacePath string) Model {
 	if workspacePath == "" {
 		workspacePath = "./"
 	}
 
-	return WelcomeModel{
+	return Model{
 		workspacePath: workspacePath,
 	}
 }
 
-func (m WelcomeModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -40,7 +40,7 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m WelcomeModel) View() string {
+func (m Model) View() string {
 	// ASCII art for LazyNX
 	logo := `
 ██╗      █████╗ ███████╗██╗   ██╗███╗   ██╗██╗  ██╗
