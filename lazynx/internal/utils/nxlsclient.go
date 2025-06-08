@@ -12,9 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func StartNxlsclient(ctx context.Context, p *tea.Program, logger *zap.SugaredLogger) *nxlsclient.Client {
-	currentNxWorkspacePath, _ := filepath.Abs("./")
-
+func CreateNxlsclient(logger *zap.SugaredLogger) *nxlsclient.Client {
 	// Setup separate logger for nxlsclient
 	nxlsclientLogFile := filepath.Join(filepath.Dir(GetDefaultLogFile()), "nxlsclient.log")
 	nxlsclientLogger, err := SetupFileLogger(nxlsclientLogFile, true)
@@ -23,9 +21,23 @@ func StartNxlsclient(ctx context.Context, p *tea.Program, logger *zap.SugaredLog
 		nxlsclientLogger = logger
 	}
 
-	// Create the client with custom logger
+	// Create the client with custom logger but don't initialize it yet
+	currentNxWorkspacePath, _ := filepath.Abs("./")
 	client := nxlsclient.NewClientWithLogger(currentNxWorkspacePath, true, nxlsclientLogger)
 	logger.Infow("Created nxlsclient", "workspacePath", currentNxWorkspacePath)
+
+	return client
+}
+
+func InitializeNxlsclient(ctx context.Context, client *nxlsclient.Client, workspacePath string, p *tea.Program, logger *zap.SugaredLogger) error {
+	// Update workspace path if different
+	if workspacePath != "" {
+		absPath, err := filepath.Abs(workspacePath)
+		if err != nil {
+			return err
+		}
+		client.NxWorkspacePath = absPath
+	}
 
 	params := &protocol.InitializeParams{
 		RootURI: protocol.DocumentURI(client.NxWorkspacePath),
@@ -39,6 +51,7 @@ func StartNxlsclient(ctx context.Context, p *tea.Program, logger *zap.SugaredLog
 			"workspacePath": client.NxWorkspacePath,
 		},
 	}
+
 	// Channel for initialization result
 	ch := make(chan *commands.InitializeRequestResult)
 
@@ -49,10 +62,11 @@ func StartNxlsclient(ctx context.Context, p *tea.Program, logger *zap.SugaredLog
 	})
 
 	logger.Info("Starting nxlsclient")
-	err = client.Start(ctx, params, ch)
+	err := client.Start(ctx, params, ch)
 	if err != nil {
 		logger.Errorw("Failed to start nxlsclient", "error", err)
+		return err
 	}
 
-	return client
+	return nil
 }

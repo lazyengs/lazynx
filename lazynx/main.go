@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -16,14 +15,16 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error setting up logger: %v", err)
 		os.Exit(1)
 	}
-	defer logger.Sync()
+	defer func() {
+		_ = logger.Sync()
+	}()
 
 	logger.Info("Starting LazyNX")
 
-	p := program.Create()
+	// Create nxlsclient but don't initialize it yet
+	client := utils.CreateNxlsclient(logger)
 
-	ctx := context.Background()
-	go utils.StartNxlsclient(ctx, p, logger)
+	p := program.Create(client, logger)
 
 	logger.Info("Starting Bubble Tea program")
 	if _, err := p.Run(); err != nil {

@@ -1,174 +1,163 @@
 package program
 
 import (
+	"context"
+
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/lazyengs/lazynx/internal/components"
-	"github.com/lazyengs/lazynx/internal/models/a"
-	"github.com/lazyengs/lazynx/internal/models/b"
-	"github.com/lazyengs/lazynx/internal/models/c"
+	"github.com/lazyengs/lazynx/internal/models/welcome"
 	"github.com/lazyengs/lazynx/internal/utils"
-)
-
-type (
-	ModelId  int
-	ModelMap map[ModelId]tea.Model
+	"github.com/lazyengs/lazynx/pkg/nxlsclient"
+	"go.uber.org/zap"
 )
 
 type ProgramModel struct {
-	models         ModelMap
-	viewport       tea.WindowSizeMsg
-	focusedModelId ModelId
+	welcomeModel  tea.Model
+	spinner       spinner.Model
+	viewport      tea.WindowSizeMsg
+	client        *nxlsclient.Client
+	logger        *zap.SugaredLogger
+	initialized   bool
+	initializing  bool
+	errorMsg      string
+	workspacePath string
 }
 
-const (
-	ViewA ModelId = iota
-	ViewB
-	ViewC
-)
+type initResultMsg struct {
+	err error
+}
 
-func createProgram() ProgramModel {
-	// Model ID keeps track of the current model the user is
-	// focused in as well as the key to get the actual model
-	// model from the map.
-	currentModelId := ViewA
-
-	models := make(ModelMap)
-	models[ViewA] = a.Spawn()
-	models[ViewB] = b.Spawn()
-	models[ViewC] = c.Spawn()
+func createProgram(client *nxlsclient.Client, logger *zap.SugaredLogger) ProgramModel {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return ProgramModel{
-		focusedModelId: currentModelId,
-		models:         models,
+		welcomeModel: welcome.New(),
+		spinner:      s,
+		client:       client,
+		logger:       logger,
+		initialized:  false,
+		initializing: false,
 	}
 }
 
 func (m ProgramModel) Init() tea.Cmd {
-	return nil
+	return m.welcomeModel.Init()
 }
 
 func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		// In order to make the program responsive, we'll need to keep track of
-		// the available viewport, as every model's layout will be derived from
-		// these dimensions.
 		m.viewport = msg
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "tab":
-			m.focusedModelId = ModelId(int(m.focusedModelId + 1))
-			if int(m.focusedModelId) > len(m.models)-1 {
-				m.focusedModelId = 0
+		default:
+			// Reset error state on any key press
+			if m.errorMsg != "" {
+				m.errorMsg = ""
+				return m, nil
 			}
-			return m, nil
-		case "shift+tab":
-			m.focusedModelId = ModelId(int(m.focusedModelId - 1))
-			if int(m.focusedModelId) < 0 {
-				m.focusedModelId = ModelId(len(m.models) - 1)
-			}
-			return m, nil
 		}
+	case welcome.WorkspacePathMsg:
+		if !m.initializing {
+			m.workspacePath = msg.Path
+			m.initializing = true
+			return m, tea.Batch(
+				m.spinner.Tick,
+				m.initializeClient(),
+			)
+		}
+	case initResultMsg:
+		m.initializing = false
+		if msg.err != nil {
+			m.errorMsg = msg.err.Error()
+		} else {
+			m.initialized = true
+		}
+		return m, nil
 	}
 
-	// If none of the above cases are met, we'll deletate the message
-	// to the currently focused model and let it handle it separately
-	// and perform any updates necessary.
-	currentModel := m.getModel(m.focusedModelId)
-	updatedModel, cmd := currentModel.Update(msg)
+	if !m.initialized && !m.initializing {
+		m.welcomeModel, cmd = m.welcomeModel.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
-	// The resulting model reflects the updated state, and it must be
-	// revalidated within our set of models, which is essentially done
-	// by hot-swapping the model with the updated one.
-	m.updateModel(m.focusedModelId, updatedModel)
+	if m.initializing {
+		m.spinner, cmd = m.spinner.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
+}
+
+func (m ProgramModel) initializeClient() tea.Cmd {
+	return func() tea.Msg {
+		ctx := context.Background()
+		err := utils.InitializeNxlsclient(ctx, m.client, m.workspacePath, nil, m.logger)
+		return initResultMsg{err: err}
+	}
 }
 
 func (m ProgramModel) View() string {
-	w1, w2 := utils.SafeHalves(m.viewport.Width)
-
-	leftPane := lipgloss.JoinVertical(
-		lipgloss.Top,
-		m.getModelStyle(ViewA).Render(m.getModel(ViewA).View()),
-		m.getModelStyle(ViewB).Render(m.getModel(ViewB).View()),
-	)
-	rightPane := m.getModelStyle(ViewC).Render(m.getModel(ViewC).View())
-
-	bottomText := lipgloss.JoinHorizontal(
-		lipgloss.Right,
-		lipgloss.NewStyle().Width(w1).Foreground(lipgloss.Color('7')).Align(lipgloss.Left).Render("Next view: ⇥ | Previous view: ⇧⇥"),
-		lipgloss.NewStyle().Width(w2).Foreground(lipgloss.Color('7')).Align(lipgloss.Right).Render("Lazynx v0.1.0"),
-	)
-
-	return lipgloss.JoinVertical(
-		lipgloss.Top,
-		lipgloss.JoinHorizontal(
-			lipgloss.Right,
-			leftPane,
-			rightPane,
-		),
-		bottomText,
-	)
-}
-
-func (m ProgramModel) getModel(id ModelId) tea.Model {
-	return m.models[id]
-}
-
-func (m ProgramModel) updateModel(id ModelId, model tea.Model) {
-	m.models[id] = model
-}
-
-func (m ProgramModel) getModelStyle(id ModelId) lipgloss.Style {
-	component := components.InactiveBox
-
-	if id == m.focusedModelId {
-		component = components.ActiveBox
+	if m.initialized {
+		return lipgloss.JoinVertical(
+			lipgloss.Center,
+			"",
+			lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#00FF00")).
+				Bold(true).
+				Render("✓ Workspace initialized successfully!"),
+			"",
+			"Workspace: "+m.workspacePath,
+			"",
+			lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#888888")).
+				Render("Press Ctrl+C to exit"),
+		)
 	}
 
-	// These are all model-related styles. The model decides *what* to render,
-	// but the program decides *how* to render it.
-	//
-	// This involves:
-	// - Dimensions
-	// - Positioning
-	// - Focused states
-	//
-	// Here, we're allocating the entire viewport width for placing all panes
-	// but reserving a single row at the bottom, for general info & controls.
-	availableWidth := m.viewport.Width
-	availableHeight := m.viewport.Height - 1
-
-	// Since we're on a TUI splitting a dimension in half isn't guaranteed to
-	// result in two equal halves -or thirds-, so we'll use a helper function
-	// to ensure each pane gets the right dimensions based on their position.
-	//
-	// This very manual approach to layouts may be revisited in the future in
-	// favor of a more flexible and automated layout system.
-	//
-	// See: https://github.com/charmbracelet/lipgloss/issues/166
-	w1, w2 := utils.SafeHalves(availableWidth)
-	h1, h2 := utils.SafeHalves(availableHeight)
-
-	h3 := availableHeight
-
-	switch id {
-	case ViewA:
-		component = component.Width(w1 - 2).Height(h1 - 2)
-	case ViewB:
-		component = component.Width(w1 - 2).Height(h2 - 2)
-	case ViewC:
-		component = component.Width(w2 - 2).Height(h3 - 2)
+	if m.initializing {
+		return lipgloss.JoinVertical(
+			lipgloss.Center,
+			"",
+			lipgloss.JoinHorizontal(
+				lipgloss.Center,
+				m.spinner.View(),
+				"  Initializing workspace...",
+			),
+			"",
+			lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#888888")).
+				Render("Workspace: "+m.workspacePath),
+		)
 	}
 
-	return component
+	if m.errorMsg != "" {
+		return lipgloss.JoinVertical(
+			lipgloss.Center,
+			m.welcomeModel.View(),
+			"",
+			lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#FF5722")).
+				Render("Error: "+m.errorMsg),
+			"",
+			lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#888888")).
+				Render("Press any key to try again"),
+		)
+	}
+
+	return m.welcomeModel.View()
 }
 
-func Create() *tea.Program {
-	return tea.NewProgram(createProgram(), tea.WithAltScreen())
+func Create(client *nxlsclient.Client, logger *zap.SugaredLogger) *tea.Program {
+	return tea.NewProgram(createProgram(client, logger), tea.WithAltScreen())
 }
