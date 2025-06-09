@@ -1,11 +1,16 @@
 package program
 
 import (
+	"reflect"
+
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/lazyengs/lazynx/internal/components"
 	"github.com/lazyengs/lazynx/internal/models/welcome"
+	"github.com/lazyengs/lazynx/internal/utils"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.uber.org/zap"
@@ -18,10 +23,145 @@ const (
 	welcomeView
 )
 
+type keyMap struct {
+	Up            key.Binding
+	Down          key.Binding
+	Left          key.Binding
+	Right         key.Binding
+	Enter         key.Binding
+	Tab           key.Binding
+	ShiftTab      key.Binding
+	Escape        key.Binding
+	Help          key.Binding
+	Quit          key.Binding
+	Refresh       key.Binding
+	Search        key.Binding
+	Filter        key.Binding
+	TogglePreview key.Binding
+	SelectAll     key.Binding
+	DeselectAll   key.Binding
+}
+
+var globalKeys = keyMap{
+	Up: key.NewBinding(
+		key.WithKeys("up", "k"),
+		key.WithHelp("↑/k", "move up"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("down", "j"),
+		key.WithHelp("↓/j", "move down"),
+	),
+	Left: key.NewBinding(
+		key.WithKeys("left", "h"),
+		key.WithHelp("←/h", "move left"),
+	),
+	Right: key.NewBinding(
+		key.WithKeys("right", "l"),
+		key.WithHelp("→/l", "move right"),
+	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "select/confirm"),
+	),
+	Tab: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("tab", "next field"),
+	),
+	ShiftTab: key.NewBinding(
+		key.WithKeys("shift+tab"),
+		key.WithHelp("shift+tab", "previous field"),
+	),
+	Escape: key.NewBinding(
+		key.WithKeys("esc"),
+		key.WithHelp("esc", "cancel/back"),
+	),
+	Help: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "toggle help"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q", "ctrl+c"),
+		key.WithHelp("q/ctrl+c", "quit"),
+	),
+	Refresh: key.NewBinding(
+		key.WithKeys("r", "f5"),
+		key.WithHelp("r/F5", "refresh"),
+	),
+	Search: key.NewBinding(
+		key.WithKeys("/"),
+		key.WithHelp("/", "search"),
+	),
+	Filter: key.NewBinding(
+		key.WithKeys("f"),
+		key.WithHelp("f", "filter"),
+	),
+	TogglePreview: key.NewBinding(
+		key.WithKeys("p"),
+		key.WithHelp("p", "toggle preview"),
+	),
+	SelectAll: key.NewBinding(
+		key.WithKeys("ctrl+a"),
+		key.WithHelp("ctrl+a", "select all"),
+	),
+	DeselectAll: key.NewBinding(
+		key.WithKeys("ctrl+d"),
+		key.WithHelp("ctrl+d", "deselect all"),
+	),
+}
+
+// keyMapToSlice uses reflection to extract all key bindings from a struct
+func keyMapToSlice(keymap any) []key.Binding {
+	var bindings []key.Binding
+	typ := reflect.TypeOf(keymap)
+	if typ.Kind() != reflect.Struct {
+		return bindings
+	}
+
+	val := reflect.ValueOf(keymap)
+	for i := 0; i < typ.NumField(); i++ {
+		field := val.Field(i)
+		if field.Type() == reflect.TypeOf(key.Binding{}) {
+			bindings = append(bindings, field.Interface().(key.Binding))
+		}
+	}
+	return bindings
+}
+
+func getKeysForView(view activeView) []key.Binding {
+	switch view {
+	case welcomeView:
+		// For welcome view, show most relevant keys
+		return []key.Binding{
+			globalKeys.Help,
+			globalKeys.Quit,
+			globalKeys.Refresh,
+			globalKeys.Enter,
+			globalKeys.Search,
+			globalKeys.Filter,
+			globalKeys.Up,
+			globalKeys.Down,
+			globalKeys.Left,
+			globalKeys.Right,
+		}
+	case spinnerView:
+		// For spinner view, show minimal keys
+		return []key.Binding{
+			globalKeys.Help,
+			globalKeys.Quit,
+			globalKeys.Escape,
+		}
+	default:
+		// For unknown views, show all keys using reflection
+		return keyMapToSlice(globalKeys)
+	}
+}
+
 type ProgramModel struct {
 	welcomeModel  welcome.Model
 	spinnerModel  spinner.Model
+	helpComponent *components.HelpComponent
 	activeView    activeView
+	showHelp      bool
 	viewport      tea.WindowSizeMsg
 	client        *nxlsclient.Client
 	logger        *zap.SugaredLogger
@@ -34,9 +174,12 @@ func createProgram(client *nxlsclient.Client, logger *zap.SugaredLogger, workspa
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
+	helpComp := components.NewHelpComponent()
+
 	return ProgramModel{
 		welcomeModel:  welcome.New(workspacePath),
 		spinnerModel:  s,
+		helpComponent: helpComp,
 		client:        client,
 		activeView:    spinnerView,
 		logger:        logger,
@@ -49,6 +192,7 @@ func (m ProgramModel) Init() tea.Cmd {
 	return tea.Batch(
 		m.welcomeModel.Init(),
 		m.spinnerModel.Tick,
+		m.helpComponent.Init(),
 	)
 }
 
@@ -59,11 +203,21 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.viewport = msg
+		helpModel, helpCmd := m.helpComponent.Update(msg)
+		m.helpComponent = helpModel.(*components.HelpComponent)
+		cmds = append(cmds, helpCmd)
 		m.welcomeModel, cmd = m.welcomeModel.Update(msg)
 		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
+		switch {
+		case key.Matches(msg, globalKeys.Help):
+			m.showHelp = !m.showHelp
+			if m.showHelp {
+				// Update help component with current view's key bindings
+				m.helpComponent.SetBindings(getKeysForView(m.activeView))
+			}
+			return m, nil
+		case key.Matches(msg, globalKeys.Quit):
 			return m, tea.Quit
 		default:
 			// Reset error state on any key press
@@ -91,13 +245,24 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m ProgramModel) View() string {
-	if m.activeView == welcomeView {
-		return m.welcomeModel.View()
-	}
 
-	if m.activeView == spinnerView {
-		return lipgloss.JoinVertical(
+func (m ProgramModel) View() string {
+	var baseView string
+
+	if m.activeView == welcomeView {
+		content := m.welcomeModel.View()
+		helpFooter := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#888888")).
+			Render("Press ? for help")
+
+		baseView = lipgloss.JoinVertical(
+			lipgloss.Center,
+			content,
+			"",
+			helpFooter,
+		)
+	} else if m.activeView == spinnerView {
+		baseView = lipgloss.JoinVertical(
 			lipgloss.Center,
 			"",
 			lipgloss.JoinHorizontal(
@@ -110,10 +275,8 @@ func (m ProgramModel) View() string {
 				Foreground(lipgloss.Color("#888888")).
 				Render("Workspace: "+m.workspacePath),
 		)
-	}
-
-	if m.errorMsg != "" {
-		return lipgloss.JoinVertical(
+	} else if m.errorMsg != "" {
+		baseView = lipgloss.JoinVertical(
 			lipgloss.Center,
 			m.welcomeModel.View(),
 			"",
@@ -125,9 +288,58 @@ func (m ProgramModel) View() string {
 				Foreground(lipgloss.Color("#888888")).
 				Render("Press any key to try again"),
 		)
+	} else {
+		baseView = ""
 	}
 
-	return ""
+	// Ensure base view fills the viewport
+	if baseView != "" {
+		baseView = lipgloss.NewStyle().
+			Width(m.viewport.Width).
+			Height(m.viewport.Height).
+			Render(baseView)
+	}
+
+	// If help is shown, create a true overlay that preserves the background
+	if m.showHelp {
+		// Ensure base view fills the entire viewport
+		styledBaseView := lipgloss.NewStyle().
+			Width(m.viewport.Width).
+			Height(m.viewport.Height).
+			Render(baseView)
+
+		// Render the help modal content  
+		modal := m.helpComponent.View()
+
+		// Add instruction text below the modal
+		instructions := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#888888")).
+			AlignHorizontal(lipgloss.Center).
+			Render("Press ? again to close help")
+
+		modalContent := lipgloss.JoinVertical(
+			lipgloss.Center,
+			modal,
+			"",
+			instructions,
+		)
+
+		// Calculate center position for the modal
+		modalWidth := lipgloss.Width(modalContent)
+		modalHeight := lipgloss.Height(modalContent)
+		
+		// Center the modal on the screen
+		x := (m.viewport.Width - modalWidth) / 2
+		y := (m.viewport.Height - modalHeight) / 2
+
+		// Use PlaceOverlay to place the modal on top of the base view
+		// This will preserve the background while showing the modal on top
+		overlay := utils.PlaceOverlay(x, y, modalContent, styledBaseView)
+
+		return overlay
+	}
+
+	return baseView
 }
 
 func Create(client *nxlsclient.Client, logger *zap.SugaredLogger, workspacePath string) *tea.Program {
