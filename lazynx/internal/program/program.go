@@ -24,22 +24,17 @@ const (
 )
 
 type keyMap struct {
-	Up            key.Binding
-	Down          key.Binding
-	Left          key.Binding
-	Right         key.Binding
-	Enter         key.Binding
-	Tab           key.Binding
-	ShiftTab      key.Binding
-	Escape        key.Binding
-	Help          key.Binding
-	Quit          key.Binding
-	Refresh       key.Binding
-	Search        key.Binding
-	Filter        key.Binding
-	TogglePreview key.Binding
-	SelectAll     key.Binding
-	DeselectAll   key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Left    key.Binding
+	Right   key.Binding
+	Enter   key.Binding
+	Escape  key.Binding
+	Help    key.Binding
+	Quit    key.Binding
+	Refresh key.Binding
+	Search  key.Binding
+	Filter  key.Binding
 }
 
 var globalKeys = keyMap{
@@ -59,22 +54,6 @@ var globalKeys = keyMap{
 		key.WithKeys("right", "l"),
 		key.WithHelp("→/l", "move right"),
 	),
-	Enter: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "select/confirm"),
-	),
-	Tab: key.NewBinding(
-		key.WithKeys("tab"),
-		key.WithHelp("tab", "next field"),
-	),
-	ShiftTab: key.NewBinding(
-		key.WithKeys("shift+tab"),
-		key.WithHelp("shift+tab", "previous field"),
-	),
-	Escape: key.NewBinding(
-		key.WithKeys("esc"),
-		key.WithHelp("esc", "cancel/back"),
-	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "toggle help"),
@@ -82,30 +61,6 @@ var globalKeys = keyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "ctrl+c"),
 		key.WithHelp("q/ctrl+c", "quit"),
-	),
-	Refresh: key.NewBinding(
-		key.WithKeys("r", "f5"),
-		key.WithHelp("r/F5", "refresh"),
-	),
-	Search: key.NewBinding(
-		key.WithKeys("/"),
-		key.WithHelp("/", "search"),
-	),
-	Filter: key.NewBinding(
-		key.WithKeys("f"),
-		key.WithHelp("f", "filter"),
-	),
-	TogglePreview: key.NewBinding(
-		key.WithKeys("p"),
-		key.WithHelp("p", "toggle preview"),
-	),
-	SelectAll: key.NewBinding(
-		key.WithKeys("ctrl+a"),
-		key.WithHelp("ctrl+a", "select all"),
-	),
-	DeselectAll: key.NewBinding(
-		key.WithKeys("ctrl+d"),
-		key.WithHelp("ctrl+d", "deselect all"),
 	),
 }
 
@@ -118,7 +73,7 @@ func keyMapToSlice(keymap any) []key.Binding {
 	}
 
 	val := reflect.ValueOf(keymap)
-	for i := 0; i < typ.NumField(); i++ {
+	for i := range typ.NumField() {
 		field := val.Field(i)
 		if field.Type() == reflect.TypeOf(key.Binding{}) {
 			bindings = append(bindings, field.Interface().(key.Binding))
@@ -245,7 +200,6 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-
 func (m ProgramModel) View() string {
 	var baseView string
 
@@ -308,7 +262,7 @@ func (m ProgramModel) View() string {
 			Height(m.viewport.Height).
 			Render(baseView)
 
-		// Render the help modal content  
+		// Render the help modal content
 		modal := m.helpComponent.View()
 
 		// Add instruction text below the modal
@@ -327,7 +281,7 @@ func (m ProgramModel) View() string {
 		// Calculate center position for the modal
 		modalWidth := lipgloss.Width(modalContent)
 		modalHeight := lipgloss.Height(modalContent)
-		
+
 		// Center the modal on the screen
 		x := (m.viewport.Width - modalWidth) / 2
 		y := (m.viewport.Height - modalHeight) / 2

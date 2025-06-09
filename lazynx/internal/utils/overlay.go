@@ -4,18 +4,16 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/mattn/go-runewidth"
 	"github.com/muesli/reflow/ansi"
 	"github.com/muesli/reflow/truncate"
 )
 
-// WhitespaceOption configures whitespace rendering
+// WhitespaceOption configures whitespace rendering (for future extensibility)
 type WhitespaceOption func(*whitespace)
 
 type whitespace struct {
 	chars string
-	style lipgloss.Style
 }
 
 func (w *whitespace) render(width int) string {
@@ -25,21 +23,7 @@ func (w *whitespace) render(width int) string {
 	if w.chars == "" {
 		return strings.Repeat(" ", width)
 	}
-	return w.style.Render(strings.Repeat(w.chars, width))
-}
-
-// WithWhitespaceChars sets the characters used to fill whitespace
-func WithWhitespaceChars(chars string) WhitespaceOption {
-	return func(w *whitespace) {
-		w.chars = chars
-	}
-}
-
-// WithWhitespaceStyle sets the style for whitespace
-func WithWhitespaceStyle(style lipgloss.Style) WhitespaceOption {
-	return func(w *whitespace) {
-		w.style = style
-	}
+	return strings.Repeat(w.chars, width)
 }
 
 func clamp(v, low, high int) int {
@@ -65,6 +49,7 @@ func getLines(s string) ([]string, int) {
 }
 
 // PlaceOverlay places fg on top of bg.
+// took from https://github.com/charmbracelet/lipgloss/pull/102/files
 func PlaceOverlay(x, y int, fg, bg string, opts ...WhitespaceOption) string {
 	fgLines, fgWidth := getLines(fg)
 	bgLines, bgWidth := getLines(bg)
@@ -125,6 +110,7 @@ func PlaceOverlay(x, y int, fg, bg string, opts ...WhitespaceOption) string {
 
 // cutLeft cuts printable characters from the left.
 // This function is heavily based on muesli's ansi and truncate packages.
+// took from https://github.com/charmbracelet/lipgloss/pull/102/files
 func cutLeft(s string, cutWidth int) string {
 	var (
 		pos    int
