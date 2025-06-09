@@ -1,4 +1,4 @@
-package program
+package tui
 
 import (
 	"reflect"
@@ -8,9 +8,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/lazyengs/lazynx/internal/components"
-	"github.com/lazyengs/lazynx/internal/models/welcome"
-	"github.com/lazyengs/lazynx/internal/utils"
+	"github.com/lazyengs/lazynx/internal/tui/components"
+	"github.com/lazyengs/lazynx/internal/tui/layout"
+	"github.com/lazyengs/lazynx/internal/tui/models/welcome"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.uber.org/zap"
@@ -288,7 +288,7 @@ func (m ProgramModel) View() string {
 
 		// Use PlaceOverlay to place the modal on top of the base view
 		// This will preserve the background while showing the modal on top
-		overlay := utils.PlaceOverlay(x, y, modalContent, styledBaseView)
+		overlay := layout.PlaceOverlay(x, y, modalContent, styledBaseView)
 
 		return overlay
 	}

@@ -1,4 +1,4 @@
-package utils
+package nxls
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/lazyengs/lazynx/internal/logs"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.lsp.dev/protocol"
@@ -14,8 +15,8 @@ import (
 
 func CreateNxlsclient(logger *zap.SugaredLogger) *nxlsclient.Client {
 	// Setup separate logger for nxlsclient
-	nxlsclientLogFile := filepath.Join(filepath.Dir(GetDefaultLogFile()), "nxlsclient.log")
-	nxlsclientLogger, err := SetupFileLogger(nxlsclientLogFile, true)
+	nxlsclientLogFile := filepath.Join(filepath.Dir(logs.GetDefaultLogFile()), "nxlsclient.log")
+	nxlsclientLogger, err := logs.SetupFileLogger(nxlsclientLogFile, true)
 	if err != nil {
 		logger.Errorw("Failed to setup nxlsclient logger, using main logger", "error", err)
 		nxlsclientLogger = logger

@@ -6,8 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
-	"github.com/lazyengs/lazynx/internal/program"
-	"github.com/lazyengs/lazynx/internal/utils"
+	"github.com/lazyengs/lazynx/internal/logs"
+	"github.com/lazyengs/lazynx/internal/nxls"
+	"github.com/lazyengs/lazynx/internal/tui"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -40,10 +41,10 @@ func runLazyNX(cmd *cobra.Command, args []string) error {
 	if logFile != "" {
 		logPath = logFile
 	} else {
-		logPath = utils.GetDefaultLogFile()
+		logPath = logs.GetDefaultLogFile()
 	}
 
-	logger, err := utils.SetupFileLogger(logPath, verbose)
+	logger, err := logs.SetupFileLogger(logPath, verbose)
 	if err != nil {
 		return fmt.Errorf("error setting up logger: %w", err)
 	}
@@ -64,14 +65,14 @@ func runLazyNX(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create nxlsclient but don't initialize it yet
-	client := utils.CreateNxlsclient(logger)
+	client := nxls.CreateNxlsclient(logger)
 
 	// Create and run the program
-	p := program.Create(client, logger, workspacePath)
+	p := tui.Create(client, logger, workspacePath)
 
 	// Initialize the nxlsclient
 	go func() {
-		err := utils.InitializeNxlsclient(cmd.Context(), client, workspacePath, p, logger)
+		err := nxls.InitializeNxlsclient(cmd.Context(), client, workspacePath, p, logger)
 		if err != nil {
 			logger.Errorw("Failed to initialize nxlsclient", "error", err)
 		}
