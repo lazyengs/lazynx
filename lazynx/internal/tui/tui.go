@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"reflect"
-
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,6 +9,7 @@ import (
 	"github.com/lazyengs/lazynx/internal/tui/components"
 	"github.com/lazyengs/lazynx/internal/tui/layout"
 	"github.com/lazyengs/lazynx/internal/tui/models/welcome"
+	"github.com/lazyengs/lazynx/internal/tui/utils"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
 	"go.uber.org/zap"
@@ -24,17 +23,12 @@ const (
 )
 
 type keyMap struct {
-	Up      key.Binding
-	Down    key.Binding
-	Left    key.Binding
-	Right   key.Binding
-	Enter   key.Binding
-	Escape  key.Binding
-	Help    key.Binding
-	Quit    key.Binding
-	Refresh key.Binding
-	Search  key.Binding
-	Filter  key.Binding
+	Up    key.Binding
+	Down  key.Binding
+	Left  key.Binding
+	Right key.Binding
+	Help  key.Binding
+	Quit  key.Binding
 }
 
 var globalKeys = keyMap{
@@ -64,24 +58,6 @@ var globalKeys = keyMap{
 	),
 }
 
-// keyMapToSlice uses reflection to extract all key bindings from a struct
-func keyMapToSlice(keymap any) []key.Binding {
-	var bindings []key.Binding
-	typ := reflect.TypeOf(keymap)
-	if typ.Kind() != reflect.Struct {
-		return bindings
-	}
-
-	val := reflect.ValueOf(keymap)
-	for i := range typ.NumField() {
-		field := val.Field(i)
-		if field.Type() == reflect.TypeOf(key.Binding{}) {
-			bindings = append(bindings, field.Interface().(key.Binding))
-		}
-	}
-	return bindings
-}
-
 func getKeysForView(view activeView) []key.Binding {
 	switch view {
 	case welcomeView:
@@ -89,34 +65,27 @@ func getKeysForView(view activeView) []key.Binding {
 		return []key.Binding{
 			globalKeys.Help,
 			globalKeys.Quit,
-			globalKeys.Refresh,
-			globalKeys.Enter,
-			globalKeys.Search,
-			globalKeys.Filter,
-			globalKeys.Up,
-			globalKeys.Down,
-			globalKeys.Left,
-			globalKeys.Right,
 		}
 	case spinnerView:
 		// For spinner view, show minimal keys
 		return []key.Binding{
 			globalKeys.Help,
 			globalKeys.Quit,
-			globalKeys.Escape,
 		}
 	default:
 		// For unknown views, show all keys using reflection
-		return keyMapToSlice(globalKeys)
+		return utils.KeyMapToSlice(globalKeys)
 	}
 }
 
 type ProgramModel struct {
-	welcomeModel  welcome.Model
-	spinnerModel  spinner.Model
-	helpComponent *components.HelpComponent
-	activeView    activeView
+	welcomeModel welcome.Model
+	spinnerModel spinner.Model
+	activeView   activeView
+
 	showHelp      bool
+	helpComponent *components.HelpComponent
+
 	viewport      tea.WindowSizeMsg
 	client        *nxlsclient.Client
 	logger        *zap.SugaredLogger
