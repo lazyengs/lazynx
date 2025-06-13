@@ -267,5 +267,9 @@ func (m ProgramModel) View() string {
 }
 
 func Create(client *nxlsclient.Client, logger *zap.SugaredLogger, workspacePath string) *tea.Program {
-	return tea.NewProgram(createProgram(client, logger, workspacePath), tea.WithAltScreen(), tea.WithKeyboardEnhancements(tea.WithUniformKeyLayout))
+	return tea.NewProgram(
+		createProgram(client, logger, workspacePath),
+		tea.WithAltScreen(),
+		tea.WithKeyboardEnhancements(tea.WithUniformKeyLayout),
+		tea.WithGraphemeClustering())
 }
