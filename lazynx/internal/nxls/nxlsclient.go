@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/lazyengs/lazynx/internal/logs"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"

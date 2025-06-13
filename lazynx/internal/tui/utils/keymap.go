@@ -3,7 +3,7 @@ package utils
 import (
 	"reflect"
 
-	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/v2/key"
 )
 
 // keyMapToSlice uses reflection to extract all key bindings from a struct
