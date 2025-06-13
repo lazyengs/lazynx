@@ -132,6 +132,7 @@ func (m ProgramModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, helpCmd)
 		m.welcomeModel, cmd = m.welcomeModel.Update(msg)
 		cmds = append(cmds, cmd)
+
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, globalKeys.Help):
@@ -266,5 +267,5 @@ func (m ProgramModel) View() string {
 }
 
 func Create(client *nxlsclient.Client, logger *zap.SugaredLogger, workspacePath string) *tea.Program {
-	return tea.NewProgram(createProgram(client, logger, workspacePath), tea.WithAltScreen())
+	return tea.NewProgram(createProgram(client, logger, workspacePath), tea.WithAltScreen(), tea.WithKeyboardEnhancements(tea.WithUniformKeyLayout))
 }

@@ -3,7 +3,6 @@ module github.com/lazyengs/lazynx
 go 1.24
 
 require (
-	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/lazyengs/lazynx/pkg/nxlsclient v0.1.0
 	github.com/muesli/reflow v0.3.0
 	go.lsp.dev/protocol v0.12.0
@@ -13,6 +12,7 @@ require (
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
+	github.com/charmbracelet/bubbletea v1.3.4 // indirect
 	github.com/charmbracelet/colorprofile v0.3.0 // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
