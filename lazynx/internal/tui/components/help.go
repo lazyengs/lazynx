@@ -3,9 +3,10 @@ package components
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/lazyengs/lazynx/internal/tui/utils"
 )
 
 type HelpComponent struct {
@@ -26,7 +27,7 @@ func (h *HelpComponent) Init() tea.Cmd {
 }
 
 func (h *HelpComponent) SetBindings(keys []key.Binding) {
-	h.keys = removeDuplicateBindings(keys)
+	h.keys = utils.RemoveDuplicateBindings(keys)
 }
 
 func (h *HelpComponent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -39,33 +40,6 @@ func (h *HelpComponent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return h, nil
-}
-
-func removeDuplicateBindings(bindings []key.Binding) []key.Binding {
-	seen := make(map[string]struct{})
-	result := make([]key.Binding, 0, len(bindings))
-
-	// Process bindings in reverse order
-	for i := len(bindings) - 1; i >= 0; i-- {
-		b := bindings[i]
-		k := strings.Join(b.Keys(), " ")
-		if _, ok := seen[k]; ok {
-			// duplicate, skip
-			continue
-		}
-		seen[k] = struct{}{}
-		// Add to the beginning of result to maintain original order
-		result = append([]key.Binding{b}, result...)
-	}
-
-	return result
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 func (h *HelpComponent) renderContent() string {
@@ -161,7 +135,6 @@ func (h *HelpComponent) renderContent() string {
 				lipgloss.Left,              // x
 				lipgloss.Top,               // y
 				lastPair,                   // content
-				lipgloss.WithWhitespaceBackground(lipgloss.Color("#1a1a1a")),
 			))
 		}
 		content := baseStyle.Width(h.width).Render(
