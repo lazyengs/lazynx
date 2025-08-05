@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
+	"github.com/lazyengs/lazynx/internal/config"
 	"github.com/lazyengs/lazynx/internal/logs"
 	"github.com/lazyengs/lazynx/internal/nxls"
 	"github.com/lazyengs/lazynx/internal/tui"
@@ -15,7 +16,6 @@ import (
 
 var (
 	verbose bool
-	logFile string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -32,19 +32,12 @@ to enter the workspace path with validation to ensure it contains nx.json.`,
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging")
-	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", "", "Specify custom log file path")
 }
 
 func runLazyNX(cmd *cobra.Command, args []string) error {
-	// Setup logging
-	var logPath string
-	if logFile != "" {
-		logPath = logFile
-	} else {
-		logPath = logs.GetDefaultLogFile()
-	}
+	config := config.LoadConfiguration()
 
-	logger, err := logs.SetupFileLogger(logPath, verbose)
+	logger, err := logs.SetupFileLogger(config.LogsPath, verbose)
 	if err != nil {
 		return fmt.Errorf("error setting up logger: %w", err)
 	}
@@ -65,7 +58,7 @@ func runLazyNX(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create nxlsclient but don't initialize it yet
-	client := nxls.CreateNxlsclient(logger)
+	client := nxls.CreateNxlsclient(logger, config)
 
 	// Create and run the program
 	p := tui.Create(client, logger, workspacePath)

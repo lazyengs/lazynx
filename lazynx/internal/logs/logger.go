@@ -47,9 +47,3 @@ func SetupFileLogger(logFile string, verbose bool) (*zap.SugaredLogger, error) {
 	logger := zap.New(core, zap.AddCaller())
 	return logger.Sugar(), nil
 }
-
-// GetDefaultLogFile returns the default log file path for lazynx
-func GetDefaultLogFile() string {
-	homeDir, _ := os.UserHomeDir()
-	return filepath.Join(homeDir, ".lazynx", "logs", "lazynx.log")
-}
