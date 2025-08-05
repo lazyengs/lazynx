@@ -13,13 +13,11 @@ const (
 )
 
 type Config struct {
-	Theme    string `json:"theme"`
 	LogsPath string `json:"logs"`
 }
 
 func new() *Config {
 	return &Config{
-		Theme:    "default",
 		LogsPath: getDefaultLogFile(),
 	}
 }
@@ -58,9 +56,6 @@ func (c *Config) overrideWith(target *Config) *Config {
 	result := *c
 
 	if target != nil {
-		if target.Theme != "" {
-			result.Theme = target.Theme
-		}
 		if target.LogsPath != "" {
 			result.LogsPath = target.LogsPath
 		}
