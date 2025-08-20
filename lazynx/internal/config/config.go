@@ -13,12 +13,12 @@ const (
 )
 
 type Config struct {
-	LogsPath string `json:"logs"`
+	Logs string `json:"logs"`
 }
 
 func new() *Config {
 	return &Config{
-		LogsPath: getDefaultLogFile(),
+		Logs: getDefaultLogFile(),
 	}
 }
 
@@ -56,8 +56,8 @@ func (c *Config) overrideWith(target *Config) *Config {
 	result := *c
 
 	if target != nil {
-		if target.LogsPath != "" {
-			result.LogsPath = target.LogsPath
+		if target.Logs != "" {
+			result.Logs = target.Logs
 		}
 	}
 
@@ -77,6 +77,6 @@ func getHomeDir() (string, error) {
 }
 
 func getDefaultLogFile() string {
-	homeDir, _ := os.UserHomeDir()
+	homeDir, _ := getHomeDir()
 	return filepath.Join(homeDir, AppName, "logs", "lazynx.log")
 }

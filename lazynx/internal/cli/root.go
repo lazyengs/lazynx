@@ -37,7 +37,7 @@ func init() {
 func runLazyNX(cmd *cobra.Command, args []string) error {
 	config := config.LoadConfiguration()
 
-	logger, err := logs.SetupFileLogger(config.LogsPath, verbose)
+	logger, err := logs.SetupFileLogger(config.Logs, verbose)
 	if err != nil {
 		return fmt.Errorf("error setting up logger: %w", err)
 	}

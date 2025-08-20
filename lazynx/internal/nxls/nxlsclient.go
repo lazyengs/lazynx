@@ -16,7 +16,7 @@ import (
 
 func CreateNxlsclient(logger *zap.SugaredLogger, config *config.Config) *nxlsclient.Client {
 	// Setup separate logger for nxlsclient
-	nxlsclientLogFile := filepath.Join(filepath.Dir(config.LogsPath), "nxlsclient.log")
+	nxlsclientLogFile := filepath.Join(filepath.Dir(config.Logs), "nxlsclient.log")
 	nxlsclientLogger, err := logs.SetupFileLogger(nxlsclientLogFile, true)
 	if err != nil {
 		logger.Errorw("Failed to setup nxlsclient logger, using main logger", "error", err)
