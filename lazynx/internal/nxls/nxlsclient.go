@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/lazyengs/lazynx/internal/config"
 	"github.com/lazyengs/lazynx/internal/logs"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient"
 	"github.com/lazyengs/lazynx/pkg/nxlsclient/commands"
@@ -13,9 +14,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func CreateNxlsclient(logger *zap.SugaredLogger) *nxlsclient.Client {
+func CreateNxlsclient(logger *zap.SugaredLogger, config *config.Config) *nxlsclient.Client {
 	// Setup separate logger for nxlsclient
-	nxlsclientLogFile := filepath.Join(filepath.Dir(logs.GetDefaultLogFile()), "nxlsclient.log")
+	nxlsclientLogFile := filepath.Join(filepath.Dir(config.Logs), "nxlsclient.log")
 	nxlsclientLogger, err := logs.SetupFileLogger(nxlsclientLogFile, true)
 	if err != nil {
 		logger.Errorw("Failed to setup nxlsclient logger, using main logger", "error", err)
